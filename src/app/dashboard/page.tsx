@@ -1,0 +1,267 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+
+type TeacherRank = {
+  id: string;
+  name: string;
+  department: string;
+  image: string | null;
+  totalReviews: number;
+  averageRating: number;
+  weightedScore: number;
+  rank: number;
+};
+
+type Period = "daily" | "weekly" | "monthly" | "all";
+
+const PERIOD_LABELS: Record<Period, string> = {
+  daily: "Today",
+  weekly: "This Week",
+  monthly: "This Month",
+  all: "All Time",
+};
+
+const RANK_BADGES: Record<number, string> = {
+  1: "🥇",
+  2: "🥈",
+  3: "🥉",
+};
+
+function StarDisplay({ rating }: { rating: number }) {
+  return (
+    <div className="flex items-center gap-0.5">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <span
+          key={star}
+          className={`text-sm ${
+            star <= Math.round(rating) ? "text-amber-400" : "text-slate-200"
+          }`}
+        >
+          ★
+        </span>
+      ))}
+    </div>
+  );
+}
+
+export default function LeaderboardPage() {
+  const [period, setPeriod] = useState<Period>("all");
+  const [leaderboard, setLeaderboard] = useState<TeacherRank[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchLeaderboard(period);
+  }, [period]);
+
+  const fetchLeaderboard = async (p: Period) => {
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/leaderboard?period=${p}`);
+      if (res.ok) {
+        const data = await res.json();
+        setLeaderboard(data.leaderboard);
+      }
+    } catch (err) {
+      console.error("Failed to fetch leaderboard:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="w-full">
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-black text-slate-900 tracking-tight">
+          🏆 Faculty Leaderboard
+        </h1>
+        <p className="text-slate-500 font-medium mt-1 max-w-2xl">
+          Rankings based on anonymous student feedback. Scores combine average
+          rating (70%) with review volume (30%).
+        </p>
+      </div>
+
+      {/* Period Tabs */}
+      <div className="flex gap-2 mb-8 flex-wrap">
+        {(Object.keys(PERIOD_LABELS) as Period[]).map((p) => (
+          <button
+            key={p}
+            onClick={() => setPeriod(p)}
+            className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-all ${
+              period === p
+                ? "bg-blue-600 text-white shadow-[0_4px_14px_0_rgba(37,99,235,0.39)]"
+                : "bg-white text-slate-600 border border-slate-200 hover:border-blue-300 hover:text-blue-600"
+            }`}
+          >
+            {PERIOD_LABELS[p]}
+          </button>
+        ))}
+      </div>
+
+      {/* Loading State */}
+      {loading ? (
+        <div className="flex flex-col gap-4">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div
+              key={i}
+              className="bg-white rounded-2xl border border-slate-200 p-6 animate-pulse"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-slate-200 rounded-full" />
+                <div className="flex-1">
+                  <div className="h-5 bg-slate-200 rounded w-40 mb-2" />
+                  <div className="h-3 bg-slate-100 rounded w-24" />
+                </div>
+                <div className="h-8 bg-slate-200 rounded w-16" />
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : leaderboard.length === 0 ? (
+        /* Empty State */
+        <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center">
+          <div className="text-5xl mb-4">📊</div>
+          <h3 className="text-xl font-bold text-slate-800 mb-2">
+            No Reviews Yet
+          </h3>
+          <p className="text-slate-500 font-medium max-w-md mx-auto">
+            {period === "all"
+              ? "No reviews have been submitted yet. Be the first to provide feedback!"
+              : `No reviews found for ${PERIOD_LABELS[period].toLowerCase()}. Try selecting a different time period.`}
+          </p>
+        </div>
+      ) : (
+        /* Leaderboard List */
+        <div className="flex flex-col gap-4">
+          {/* Top 3 Podium */}
+          {leaderboard.length >= 3 && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+              {leaderboard.slice(0, 3).map((teacher, idx) => (
+                <motion.div
+                  key={teacher.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: idx * 0.1 }}
+                  className={`relative rounded-3xl p-6 border-2 text-center overflow-hidden ${
+                    idx === 0
+                      ? "bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-200 shadow-lg shadow-amber-100/50 md:order-2 md:-mt-4"
+                      : idx === 1
+                      ? "bg-gradient-to-br from-slate-50 to-gray-50 border-slate-300 shadow-md md:order-1"
+                      : "bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200 shadow-md md:order-3"
+                  }`}
+                >
+                  {/* Rank Badge */}
+                  <div className="text-4xl mb-3">{RANK_BADGES[teacher.rank]}</div>
+
+                  {/* Avatar */}
+                  <div
+                    className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center text-2xl mb-3 ${
+                      idx === 0
+                        ? "bg-amber-100 ring-4 ring-amber-300/50"
+                        : idx === 1
+                        ? "bg-slate-200 ring-4 ring-slate-300/50"
+                        : "bg-orange-100 ring-4 ring-orange-300/50"
+                    }`}
+                  >
+                    {teacher.image ? (
+                      <img
+                        src={teacher.image}
+                        alt={teacher.name}
+                        className="w-full h-full rounded-full object-cover"
+                      />
+                    ) : (
+                      "👨‍🏫"
+                    )}
+                  </div>
+
+                  <h3 className="font-black text-lg text-slate-900 truncate">
+                    {teacher.name}
+                  </h3>
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    {teacher.department}
+                  </span>
+
+                  <div className="mt-4 flex flex-col items-center gap-1">
+                    <StarDisplay rating={teacher.averageRating} />
+                    <span className="text-2xl font-black text-slate-900">
+                      {teacher.averageRating}
+                      <span className="text-sm text-slate-400 ml-1">/ 5.0</span>
+                    </span>
+                    <span className="text-xs font-semibold text-slate-500">
+                      {teacher.totalReviews} review
+                      {teacher.totalReviews !== 1 ? "s" : ""}
+                    </span>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
+
+          {/* Remaining teachers (or all if < 3) */}
+          <AnimatePresence>
+            {leaderboard.slice(leaderboard.length >= 3 ? 3 : 0).map((teacher, idx) => (
+              <motion.div
+                key={teacher.id}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: idx * 0.05 }}
+                className="bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-md hover:border-blue-100 transition-all group"
+              >
+                <div className="flex items-center gap-4">
+                  {/* Rank */}
+                  <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center font-black text-slate-500 text-lg group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors shrink-0">
+                    {RANK_BADGES[teacher.rank] || `#${teacher.rank}`}
+                  </div>
+
+                  {/* Avatar */}
+                  <div className="w-11 h-11 bg-slate-100 rounded-full flex items-center justify-center text-lg shrink-0">
+                    {teacher.image ? (
+                      <img
+                        src={teacher.image}
+                        alt={teacher.name}
+                        className="w-full h-full rounded-full object-cover"
+                      />
+                    ) : (
+                      "👨‍🏫"
+                    )}
+                  </div>
+
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-slate-800 truncate">
+                      {teacher.name}
+                    </h3>
+                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                      {teacher.department}
+                    </span>
+                  </div>
+
+                  {/* Stats */}
+                  <div className="flex items-center gap-6 shrink-0">
+                    <div className="hidden sm:flex flex-col items-end">
+                      <StarDisplay rating={teacher.averageRating} />
+                      <span className="text-xs font-semibold text-slate-500 mt-0.5">
+                        {teacher.totalReviews} review
+                        {teacher.totalReviews !== 1 ? "s" : ""}
+                      </span>
+                    </div>
+                    <div className="bg-slate-50 border border-slate-200 px-3 py-2 rounded-xl text-center group-hover:bg-blue-50 group-hover:border-blue-200 transition-colors">
+                      <div className="text-lg font-black text-slate-900">
+                        {teacher.averageRating}
+                      </div>
+                      <div className="text-[10px] font-bold text-slate-400 uppercase">
+                        Rating
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
+      )}
+    </div>
+  );
+}
