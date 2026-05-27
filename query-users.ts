@@ -3,7 +3,7 @@ import { prisma } from './src/lib/prisma';
 
 async function main() {
   const users = await prisma.user.findMany();
-  console.log("ALL USERS:", users.map(u => ({ id: u.id, email: u.email, role: u.role, isVerified: u.isVerified, kycStatus: (u as any).kycStatus })));
+  console.log("ALL USERS:", users.map((u: any) => ({ id: u.id, email: u.email, role: u.role, isVerified: u.isVerified, kycStatus: (u as any).kycStatus })));
 
   const updatedUser = await prisma.user.update({
     where: { email: 'bishnugautam2005@gmail.com' },
