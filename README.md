@@ -1,14 +1,14 @@
-# AIRA - Academic Feedback System (MBMAN)
+# MBMAN Teacher Feedback System via AIRA
 
-Welcome to the official repository for **AIRA**, an advanced, 100% anonymous Teacher Feedback System developed for the Manmohan Memorial Polytechnic (MBMAN). 
+Welcome to the official repository for **Feedback system**, an advanced, 100% anonymous Teacher Feedback System developed for the Madan Bhandari Memorial Academy (MBMAN). 
 
-This project was built over 12 days of dedicated hard work and collaboration to solve a critical issue: allowing students to submit honest academic feedback without fear of retaliation, while protecting educators from toxic or abusive language.
+This project is building over serveral days of dedicated hard work and collaboration to solve a critical issue: allowing students to submit honest academic feedback without fear of retaliation, while protecting educators from toxic or abusive language.
 
 ---
 
 ## 👥 The Engineering Team
 
-This system was architected and developed by a dedicated team of four engineering students:
+This system are architected and developed by a dedicated team of four engineering students:
 
 - **Bishnu Gautam** - *Team Lead & Full Stack Developer*
   - Led the overall system architecture, implemented NextAuth authentication flows, built the custom OTP email verification system, and designed the Facebook Graph API webhook integration.
@@ -27,8 +27,8 @@ This system was architected and developed by a dedicated team of four engineerin
    - To guarantee student safety, the database *never* records which student submitted a review. 
    - Instead, we use a complex cryptographic hash combining the Student ID, Teacher ID, and the current date. This prevents duplicate spam while making it mathematically impossible to trace a review back to a student.
 
-2. **Automated AI Moderation (Google Gemini)**
-   - Raw feedback is passed through a rotating pool of 43 Google Gemini API keys. The AI strips profanity and hate speech, summarizing the emotional intent into constructive, professional bullet points before the teacher ever sees it.
+2. **Automated AI Moderation (AIRA)**
+   - Raw feedback is passed through a rotating pool of AIRA API KEYS. The AI strips profanity and hate speech, summarizing the emotional intent into constructive, professional bullet points before the teacher ever sees it.
 
 3. **Facebook Messenger Integration**
    - Teachers do not need to constantly check the dashboard. They can subscribe via their Facebook account, and a secure backend webhook will automatically DM them their sanitized feedback summaries every single night.
