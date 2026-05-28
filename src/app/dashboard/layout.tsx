@@ -117,8 +117,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Main Content */}
       <main className="flex-1 flex flex-col min-h-screen pt-16 md:pt-0 w-full overflow-x-hidden relative">
         <div className="p-6 md:p-10 max-w-6xl mx-auto w-full">
-          {isPendingKyc && <KycVerificationCard currentStatus={user?.kycStatus || "PENDING"} />}
-          {children}
+          {isPendingKyc ? (
+            <KycVerificationCard currentStatus={user?.kycStatus || "PENDING"} />
+          ) : (
+            children
+          )}
         </div>
       </main>
 

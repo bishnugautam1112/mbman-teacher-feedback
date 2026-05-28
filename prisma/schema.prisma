@@ -74,10 +74,11 @@ model KycDocument {
   id          String    @id @default(cuid())
   userId      String    @unique
   documentUrl String
-  status      KycStatus @default(PENDING)
-  submittedAt DateTime  @default(now())
-  reviewedAt  DateTime?
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status          KycStatus @default(PENDING)
+  rejectionReason String?
+  submittedAt     DateTime  @default(now())
+  reviewedAt      DateTime?
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Review {
