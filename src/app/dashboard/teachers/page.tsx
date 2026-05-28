@@ -17,9 +17,15 @@ export default async function TeachersPage() {
     redirect("/dashboard");
   }
 
-  // Fetch all active teachers
+  // Fetch teachers for the student's department + Basic Science teachers
   const teachers = await prisma.user.findMany({
-    where: { role: "TEACHER" },
+    where: { 
+      role: "TEACHER",
+      OR: [
+        { department: user.department },
+        { department: "BASIC_SCIENCE" }
+      ]
+    },
     select: {
       id: true,
       name: true,
