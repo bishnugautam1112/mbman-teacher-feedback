@@ -108,6 +108,7 @@ enum Department {
   COMPUTER
   CIVIL
   ARCHITECTURE
+  BASIC_SCIENCE
 }
 
 enum KycStatus {

@@ -712,6 +712,7 @@ export default function AdminPage() {
                     <option value="COMPUTER">Computer Engineering</option>
                     <option value="CIVIL">Civil Engineering</option>
                     <option value="ARCHITECTURE">Architecture</option>
+                    <option value="BASIC_SCIENCE">Basic Science</option>
                   </select>
                 </div>
                 <div className={styles.inputGroup}>
@@ -783,6 +784,7 @@ export default function AdminPage() {
                       <option value="COMPUTER">Computer Engineering</option>
                       <option value="CIVIL">Civil Engineering</option>
                       <option value="ARCHITECTURE">Architecture</option>
+                      <option value="BASIC_SCIENCE">Basic Science</option>
                     </select>
                   </div>
                   <div className={styles.inputGroup}>
