@@ -7,6 +7,7 @@ type Teacher = {
   id: string;
   name: string | null;
   department: string | null;
+  image: string | null;
 };
 
 export default function TeacherListClient({ teachers }: { teachers: Teacher[] }) {
@@ -67,8 +68,12 @@ export default function TeacherListClient({ teachers }: { teachers: Teacher[] })
             onClick={() => setSelectedTeacher(t)}
             className={`p-5 rounded-2xl border-2 transition-all cursor-pointer flex flex-col ${selectedTeacher?.id === t.id ? 'border-blue-600 bg-blue-50 shadow-md scale-[1.02]' : 'border-slate-200 bg-white hover:border-blue-300 hover:shadow-sm'}`}
           >
-            <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-xl mb-3">
-              👨‍🏫
+            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center text-2xl mb-3 overflow-hidden shadow-sm">
+              {t.image ? (
+                <img src={t.image} alt={t.name || "Teacher"} className="w-full h-full object-cover" />
+              ) : (
+                "👨‍🏫"
+              )}
             </div>
             <h3 className="font-bold text-slate-800 text-lg truncate">{t.name || "Unknown"}</h3>
             <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{t.department || "Faculty"}</span>

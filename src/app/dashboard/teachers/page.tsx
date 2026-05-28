@@ -30,6 +30,7 @@ export default async function TeachersPage() {
       id: true,
       name: true,
       department: true,
+      image: true,
     },
     orderBy: { name: "asc" }
   });
