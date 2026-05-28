@@ -101,6 +101,7 @@ enum Role {
   STUDENT
   TEACHER
   ADMIN
+  SUPER_ADMIN
 }
 
 enum Department {

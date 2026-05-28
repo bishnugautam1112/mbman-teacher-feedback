@@ -1,24 +1,19 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-
-async function requireAdmin() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user || (session.user as any).role !== "ADMIN") {
-    return false;
-  }
-  return true;
-}
+import { requireAdminOrAbove, getSessionRole, isSuperAdmin } from "@/lib/permissions";
 
 /**
  * GET /api/admin/reviews
- * Returns all reviews with raw + moderated text side-by-side.
- * Teacher name is manually joined via teacherId.
+ * Returns all reviews.
+ * - SUPER_ADMIN: sees raw + moderated text side-by-side (for AI tuning)
+ * - ADMIN: sees only the AI-moderated output (no raw student input)
  * Student identity is NEVER stored — zero privacy risk by design.
  */
 export async function GET() {
-  if (!(await requireAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+  if (!(await requireAdminOrAbove())) return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+
+  const callerRole = await getSessionRole();
+  const showRaw = isSuperAdmin(callerRole || "");
 
   try {
     // Review has no Prisma relation to User, so we join manually
@@ -40,7 +35,8 @@ export async function GET() {
       return {
         id: r.id,
         rating: r.rating,
-        rawContent: r.rawContent,
+        // Only SUPER_ADMIN can see raw content for AI comparison
+        rawContent: showRaw ? r.rawContent : null,
         moderatedText: r.moderatedText,
         teacherName: teacher?.name || "Unknown",
         teacherDepartment: teacher?.department || "N/A",

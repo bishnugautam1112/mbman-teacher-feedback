@@ -1,23 +1,15 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { geminiManager, callGoogleAIWithRetry } from "@/lib/gemini";
-
-async function requireAdmin() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user || (session.user as any).role !== "ADMIN") {
-    return false;
-  }
-  return true;
-}
+import { requireSuperAdmin } from "@/lib/permissions";
 
 /**
  * GET /api/admin/gemini-health
  * Pings the AIRA AI backend to verify liveness.
  * Returns pool size and status.
+ * SUPER_ADMIN only.
  */
 export async function GET() {
-  if (!(await requireAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+  if (!(await requireSuperAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
 
   const stats = geminiManager.getHealthStats();
 
@@ -28,7 +20,7 @@ export async function GET() {
 
   try {
     const start = Date.now();
-    const response = await callGoogleAIWithRetry("Reply with exactly: GEMINI_OK", undefined, 2);
+    const response = await callGoogleAIWithRetry("Reply with exactly: GEMINI_OK", undefined);
     latencyMs = Date.now() - start;
     responseSnippet = response.substring(0, 100);
 

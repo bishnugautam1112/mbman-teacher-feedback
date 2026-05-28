@@ -1,19 +1,10 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { requireAdminOrAbove, requireSuperAdmin } from "@/lib/permissions";
 
-async function requireAdmin() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user || (session.user as any).role !== "ADMIN") {
-    return false;
-  }
-  return true;
-}
-
-// Get all teachers
+// Get all teachers — both ADMIN and SUPER_ADMIN
 export async function GET() {
-  if (!(await requireAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+  if (!(await requireAdminOrAbove())) return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
 
   try {
     const teachers = await prisma.user.findMany({
@@ -26,9 +17,9 @@ export async function GET() {
   }
 }
 
-// Create a new teacher
+// Create a new teacher — SUPER_ADMIN only
 export async function POST(req: Request) {
-  if (!(await requireAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+  if (!(await requireSuperAdmin())) return NextResponse.json({ error: "Only Super Admin can create teachers" }, { status: 403 });
 
   try {
     const { name, email, department, image } = await req.json();
@@ -59,9 +50,9 @@ export async function POST(req: Request) {
   }
 }
 
-// Delete a teacher
+// Delete a teacher — SUPER_ADMIN only
 export async function DELETE(req: Request) {
-  if (!(await requireAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+  if (!(await requireSuperAdmin())) return NextResponse.json({ error: "Only Super Admin can delete teachers" }, { status: 403 });
 
   try {
     const { searchParams } = new URL(req.url);

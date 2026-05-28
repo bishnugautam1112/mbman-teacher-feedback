@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import styles from "./admin.module.css";
 
 type User = {
@@ -20,7 +21,7 @@ type User = {
 type ReviewAudit = {
   id: string;
   rating: number;
-  rawContent: string;
+  rawContent: string | null;
   moderatedText: string | null;
   teacherName: string;
   teacherDepartment: string;
@@ -41,7 +42,11 @@ type AIRAHealth = {
 type Tab = "HEALTH" | "KYC" | "USERS" | "REVIEWS";
 
 export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState<Tab>("HEALTH");
+  const { data: session } = useSession();
+  const userRole = (session?.user as any)?.role || "";
+  const isSuperAdmin = userRole === "SUPER_ADMIN";
+
+  const [activeTab, setActiveTab] = useState<Tab>(isSuperAdmin ? "HEALTH" : "KYC");
 
   // KYC State
   const [kycs, setKycs] = useState<any[]>([]);
@@ -68,12 +73,19 @@ export default function AdminPage() {
   // System stats
   const [systemStats, setSystemStats] = useState({ totalUsers: 0, totalStudents: 0, totalTeachers: 0, totalReviews: 0 });
 
+  // Set default tab based on role once session loads
+  useEffect(() => {
+    if (userRole) {
+      setActiveTab(isSuperAdmin ? "HEALTH" : "KYC");
+    }
+  }, [userRole, isSuperAdmin]);
+
   useEffect(() => {
     fetchKycs();
     fetchUsers();
-    fetchAiraHealth();
+    if (isSuperAdmin) fetchAiraHealth();
     fetchReviews();
-  }, []);
+  }, [isSuperAdmin]);
 
   useEffect(() => {
     if (users.length > 0 || reviews.length > 0) {
@@ -208,14 +220,10 @@ export default function AdminPage() {
     });
   };
 
-  const roleColors: Record<string, string> = {
-    ADMIN: "background: linear-gradient(135deg, #7c3aed, #6d28d9); color: white;",
-    TEACHER: "background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white;",
-    STUDENT: "background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;",
-  };
-
+  // Build tabs based on role
   const tabs: { key: Tab; label: string; icon: string; count?: number }[] = [
-    { key: "HEALTH", label: "System Health", icon: "🩺" },
+    // System Health — SUPER_ADMIN only
+    ...(isSuperAdmin ? [{ key: "HEALTH" as Tab, label: "System Health", icon: "🩺" }] : []),
     { key: "KYC", label: "KYC Approvals", icon: "📋", count: kycs.length },
     { key: "USERS", label: "User Management", icon: "👥", count: users.length },
     { key: "REVIEWS", label: "Review Audit", icon: "🔍", count: reviews.length },
@@ -227,12 +235,37 @@ export default function AdminPage() {
       <div className={styles.header}>
         <div>
           <h1 style={{ fontSize: "2rem", fontWeight: 900, color: "#0f172a", letterSpacing: "-0.02em" }}>
-            Admin Panel
+            {isSuperAdmin ? (
+              <>
+                <span style={{ background: "linear-gradient(135deg, #dc2626, #b91c1c)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                  Super Admin
+                </span>{" "}
+                Panel
+              </>
+            ) : (
+              "Admin Panel"
+            )}
           </h1>
           <p style={{ color: "#64748b", fontWeight: 500, marginTop: "0.25rem" }}>
-            System management & monitoring
+            {isSuperAdmin ? "Full system management & AI monitoring" : "User & KYC management"}
           </p>
         </div>
+        {/* Role badge */}
+        <span
+          style={{
+            fontSize: "0.7rem",
+            fontWeight: 800,
+            padding: "0.375rem 0.875rem",
+            borderRadius: "999px",
+            textTransform: "uppercase",
+            letterSpacing: "0.05em",
+            ...(isSuperAdmin
+              ? { background: "linear-gradient(135deg, #dc2626, #b91c1c)", color: "white" }
+              : { background: "linear-gradient(135deg, #7c3aed, #6d28d9)", color: "white" }),
+          }}
+        >
+          {userRole.replace("_", " ")}
+        </span>
       </div>
 
       {/* Tabs */}
@@ -275,8 +308,8 @@ export default function AdminPage() {
         ))}
       </div>
 
-      {/* ========== SYSTEM HEALTH TAB ========== */}
-      {activeTab === "HEALTH" && (
+      {/* ========== SYSTEM HEALTH TAB (SUPER_ADMIN ONLY) ========== */}
+      {activeTab === "HEALTH" && isSuperAdmin && (
         <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
           {/* Quick Stats Row */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "1rem" }}>
@@ -523,9 +556,8 @@ export default function AdminPage() {
       {/* ========== USER MANAGEMENT TAB ========== */}
       {activeTab === "USERS" && (
         <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
-          {/* Search + Add Teacher */}
+          {/* Search */}
           <div style={{ display: "flex", gap: "1rem", flexWrap: "wrap", alignItems: "flex-start" }}>
-            {/* Search */}
             <div style={{ flex: 1, minWidth: "250px" }}>
               <input
                 type="text"
@@ -546,7 +578,6 @@ export default function AdminPage() {
             </div>
           </div>
 
-          {/* Add Teacher Form + Users Table (Stacked) */}
           <div style={{ display: "flex", flexDirection: "column", gap: "2rem", width: "100%" }}>
             {/* Users Table */}
             <div className={styles.tableContainer} style={{ flex: "1 1 0%", minWidth: 0, overflowX: "auto" }}>
@@ -578,14 +609,16 @@ export default function AdminPage() {
                               borderRadius: "999px",
                               textTransform: "uppercase",
                               letterSpacing: "0.05em",
-                              ...(u.role === "ADMIN"
+                              ...(u.role === "SUPER_ADMIN"
+                                ? { background: "linear-gradient(135deg, #dc2626, #b91c1c)", color: "white" }
+                                : u.role === "ADMIN"
                                 ? { background: "linear-gradient(135deg, #7c3aed, #6d28d9)", color: "white" }
                                 : u.role === "TEACHER"
                                 ? { background: "linear-gradient(135deg, #2563eb, #1d4ed8)", color: "white" }
                                 : { background: "#f1f5f9", color: "#475569", border: "1px solid #e2e8f0" }),
                             }}
                           >
-                            {u.role}
+                            {u.role.replace("_", " ")}
                           </span>
                         </td>
                         <td style={{ fontSize: "0.8rem", color: "#64748b" }}>{u.department || "—"}</td>
@@ -625,7 +658,10 @@ export default function AdminPage() {
                             >
                               ✏️ Edit
                             </button>
-                            {u.role !== "ADMIN" && (
+                            {/* SUPER_ADMIN can delete anyone except themselves; ADMIN can delete students only */}
+                            {(isSuperAdmin
+                              ? u.role !== "SUPER_ADMIN"
+                              : u.role === "STUDENT") && (
                               <button
                                 onClick={() => handleDeleteUser(u.id, u.name)}
                                 style={{
@@ -658,45 +694,47 @@ export default function AdminPage() {
               )}
             </div>
 
-            {/* Add Teacher Form */}
-            <form className={styles.form} onSubmit={handleAddTeacher} style={{ width: "100%", maxWidth: "500px" }}>
-              <h3 style={{ fontWeight: 800, color: "#0f172a", fontSize: "1rem" }}>➕ Add New Teacher</h3>
-              <div className={styles.inputGroup}>
-                <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#475569" }}>Full Name</label>
-                <input required value={newTeacher.name} onChange={(e) => setNewTeacher({ ...newTeacher, name: e.target.value })} />
-              </div>
-              <div className={styles.inputGroup}>
-                <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#475569" }}>Email Address</label>
-                <input type="email" required value={newTeacher.email} onChange={(e) => setNewTeacher({ ...newTeacher, email: e.target.value })} />
-              </div>
-              <div className={styles.inputGroup}>
-                <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#475569" }}>Department</label>
-                <select value={newTeacher.department} onChange={(e) => setNewTeacher({ ...newTeacher, department: e.target.value })}>
-                  <option value="COMPUTER">Computer Engineering</option>
-                  <option value="CIVIL">Civil Engineering</option>
-                  <option value="ARCHITECTURE">Architecture</option>
-                </select>
-              </div>
-              <div className={styles.inputGroup}>
-                <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#475569" }}>Photo URL (Optional)</label>
-                <input value={newTeacher.image} onChange={(e) => setNewTeacher({ ...newTeacher, image: e.target.value })} placeholder="https://..." />
-              </div>
-              <button
-                type="submit"
-                style={{
-                  marginTop: "0.5rem",
-                  padding: "0.75rem",
-                  borderRadius: "0.75rem",
-                  border: "none",
-                  background: "#2563eb",
-                  color: "white",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                }}
-              >
-                Create Teacher Profile
-              </button>
-            </form>
+            {/* Add Teacher Form — SUPER_ADMIN only */}
+            {isSuperAdmin && (
+              <form className={styles.form} onSubmit={handleAddTeacher} style={{ width: "100%", maxWidth: "500px" }}>
+                <h3 style={{ fontWeight: 800, color: "#0f172a", fontSize: "1rem" }}>➕ Add New Teacher</h3>
+                <div className={styles.inputGroup}>
+                  <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#475569" }}>Full Name</label>
+                  <input required value={newTeacher.name} onChange={(e) => setNewTeacher({ ...newTeacher, name: e.target.value })} />
+                </div>
+                <div className={styles.inputGroup}>
+                  <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#475569" }}>Email Address</label>
+                  <input type="email" required value={newTeacher.email} onChange={(e) => setNewTeacher({ ...newTeacher, email: e.target.value })} />
+                </div>
+                <div className={styles.inputGroup}>
+                  <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#475569" }}>Department</label>
+                  <select value={newTeacher.department} onChange={(e) => setNewTeacher({ ...newTeacher, department: e.target.value })}>
+                    <option value="COMPUTER">Computer Engineering</option>
+                    <option value="CIVIL">Civil Engineering</option>
+                    <option value="ARCHITECTURE">Architecture</option>
+                  </select>
+                </div>
+                <div className={styles.inputGroup}>
+                  <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#475569" }}>Photo URL (Optional)</label>
+                  <input value={newTeacher.image} onChange={(e) => setNewTeacher({ ...newTeacher, image: e.target.value })} placeholder="https://..." />
+                </div>
+                <button
+                  type="submit"
+                  style={{
+                    marginTop: "0.5rem",
+                    padding: "0.75rem",
+                    borderRadius: "0.75rem",
+                    border: "none",
+                    background: "#2563eb",
+                    color: "white",
+                    fontWeight: 700,
+                    cursor: "pointer",
+                  }}
+                >
+                  Create Teacher Profile
+                </button>
+              </form>
+            )}
           </div>
 
           {/* Edit Modal */}
@@ -752,7 +790,13 @@ export default function AdminPage() {
                     <select value={editForm.role} onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}>
                       <option value="STUDENT">Student</option>
                       <option value="TEACHER">Teacher</option>
-                      <option value="ADMIN">Admin</option>
+                      {/* Only SUPER_ADMIN can assign admin-level roles */}
+                      {isSuperAdmin && (
+                        <>
+                          <option value="ADMIN">Admin</option>
+                          <option value="SUPER_ADMIN">Super Admin</option>
+                        </>
+                      )}
                     </select>
                   </div>
                   {editForm.role === "STUDENT" && (
@@ -811,17 +855,25 @@ export default function AdminPage() {
           <div
             style={{
               padding: "1rem 1.25rem",
-              background: "#f0fdf4",
+              background: isSuperAdmin ? "#eff6ff" : "#f0fdf4",
               borderRadius: "0.75rem",
-              border: "1px solid #bbf7d0",
+              border: `1px solid ${isSuperAdmin ? "#bfdbfe" : "#bbf7d0"}`,
               fontSize: "0.8rem",
               fontWeight: 600,
-              color: "#16a34a",
+              color: isSuperAdmin ? "#1d4ed8" : "#16a34a",
             }}
           >
-            🔒 Privacy Note: Reviews are 100% anonymous. The database physically has no link back to the student
-            who wrote them. The "Raw" column shows what the student typed, and "AI Edited" shows AIRA AI's moderated
-            output.
+            {isSuperAdmin ? (
+              <>
+                🔬 <strong>Super Admin View:</strong> You can see both the raw student input and AIRA AI&apos;s moderated output side-by-side.
+                Use this to evaluate and tune AI moderation quality.
+              </>
+            ) : (
+              <>
+                🔒 Privacy Note: Reviews are 100% anonymous. You are viewing AI-moderated feedback only.
+                Raw student input is restricted to Super Admin for AI tuning purposes.
+              </>
+            )}
           </div>
 
           {reviewsLoading ? (
@@ -833,12 +885,13 @@ export default function AdminPage() {
             </div>
           ) : (
             <div className={styles.tableContainer} style={{ overflowX: "auto" }}>
-              <table className={styles.table} style={{ minWidth: "900px" }}>
+              <table className={styles.table} style={{ minWidth: isSuperAdmin ? "900px" : "600px" }}>
                 <thead>
                   <tr>
                     <th style={{ width: "110px" }}>Teacher</th>
                     <th style={{ width: "60px" }}>Rating</th>
-                    <th>Raw Student Input</th>
+                    {/* Raw column — SUPER_ADMIN only */}
+                    {isSuperAdmin && <th>Raw Student Input</th>}
                     <th>AI Moderated Output</th>
                     <th style={{ width: "90px" }}>Batch</th>
                     <th style={{ width: "100px" }}>Date</th>
@@ -846,7 +899,7 @@ export default function AdminPage() {
                 </thead>
                 <tbody>
                   {reviews.map((r) => {
-                    const wasEdited = r.moderatedText && r.rawContent !== r.moderatedText;
+                    const wasEdited = isSuperAdmin && r.rawContent && r.moderatedText && r.rawContent !== r.moderatedText;
                     return (
                       <tr key={r.id}>
                         <td>
@@ -868,23 +921,26 @@ export default function AdminPage() {
                             <span style={{ color: "#fbbf24" }}>★</span> {r.rating}
                           </div>
                         </td>
-                        <td>
-                          <div
-                            style={{
-                              fontSize: "0.8rem",
-                              color: "#475569",
-                              lineHeight: 1.5,
-                              padding: "0.5rem 0.75rem",
-                              background: wasEdited ? "#fef2f2" : "#f8fafc",
-                              borderRadius: "0.5rem",
-                              border: `1px solid ${wasEdited ? "#fecaca" : "#e2e8f0"}`,
-                              maxHeight: "100px",
-                              overflow: "auto",
-                            }}
-                          >
-                            {r.rawContent}
-                          </div>
-                        </td>
+                        {/* Raw column — SUPER_ADMIN only */}
+                        {isSuperAdmin && (
+                          <td>
+                            <div
+                              style={{
+                                fontSize: "0.8rem",
+                                color: "#475569",
+                                lineHeight: 1.5,
+                                padding: "0.5rem 0.75rem",
+                                background: wasEdited ? "#fef2f2" : "#f8fafc",
+                                borderRadius: "0.5rem",
+                                border: `1px solid ${wasEdited ? "#fecaca" : "#e2e8f0"}`,
+                                maxHeight: "100px",
+                                overflow: "auto",
+                              }}
+                            >
+                              {r.rawContent || "—"}
+                            </div>
+                          </td>
+                        )}
                         <td>
                           <div
                             style={{

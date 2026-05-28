@@ -1,19 +1,9 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-
-// Middleware-like check for admin
-async function requireAdmin() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user || (session.user as any).role !== "ADMIN") {
-    return false;
-  }
-  return true;
-}
+import { requireAdminOrAbove } from "@/lib/permissions";
 
 export async function GET() {
-  if (!(await requireAdmin())) {
+  if (!(await requireAdminOrAbove())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 
@@ -34,7 +24,7 @@ export async function GET() {
 }
 
 export async function PUT(req: Request) {
-  if (!(await requireAdmin())) {
+  if (!(await requireAdminOrAbove())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 

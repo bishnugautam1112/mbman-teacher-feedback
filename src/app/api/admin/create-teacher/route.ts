@@ -1,15 +1,12 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { requireSuperAdmin } from "@/lib/permissions";
 import bcrypt from "bcryptjs";
 
 export async function POST(req: Request) {
   try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session || !session.user || (session.user as any).role !== "ADMIN") {
-      return NextResponse.json({ error: "Unauthorized access" }, { status: 403 });
+    if (!(await requireSuperAdmin())) {
+      return NextResponse.json({ error: "Only Super Admin can create teachers" }, { status: 403 });
     }
 
     const { email, name, temporaryPassword } = await req.json();

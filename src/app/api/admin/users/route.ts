@@ -1,19 +1,10 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-
-async function requireAdmin() {
-  const session = await getServerSession(authOptions);
-  if (!session?.user || (session.user as any).role !== "ADMIN") {
-    return false;
-  }
-  return true;
-}
+import { requireAdminOrAbove, getSessionRole, isSuperAdmin } from "@/lib/permissions";
 
 // GET all users with KYC info
 export async function GET() {
-  if (!(await requireAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+  if (!(await requireAdminOrAbove())) return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
 
   try {
     const users = await prisma.user.findMany({
@@ -51,13 +42,19 @@ export async function GET() {
 
 // PUT — update user details
 export async function PUT(req: Request) {
-  if (!(await requireAdmin())) return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+  if (!(await requireAdminOrAbove())) return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
 
   try {
     const { id, name, email, department, batchYear, role } = await req.json();
 
     if (!id) {
       return NextResponse.json({ error: "User ID is required" }, { status: 400 });
+    }
+
+    // Prevent privilege escalation: only SUPER_ADMIN can assign ADMIN or SUPER_ADMIN roles
+    const callerRole = await getSessionRole();
+    if (role && (role === "ADMIN" || role === "SUPER_ADMIN") && !isSuperAdmin(callerRole || "")) {
+      return NextResponse.json({ error: "Only Super Admin can assign admin roles" }, { status: 403 });
     }
 
     const updateData: any = {};
