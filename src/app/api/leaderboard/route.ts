@@ -18,6 +18,8 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const user = session.user as any;
+
     const { searchParams } = new URL(req.url);
     const period = searchParams.get("period") || "all";
 
@@ -40,8 +42,18 @@ export async function GET(req: Request) {
     // "all" → no date filter
 
     // Fetch all teachers
+    const teacherWhereClause: any = { role: "TEACHER" };
+    
+    // If student, filter by their department and BASIC_SCIENCE
+    if (user.role === "STUDENT") {
+      teacherWhereClause.OR = [
+        { department: user.department },
+        { department: "BASIC_SCIENCE" }
+      ];
+    }
+    
     const teachers = await prisma.user.findMany({
-      where: { role: "TEACHER" },
+      where: teacherWhereClause,
       select: {
         id: true,
         name: true,
