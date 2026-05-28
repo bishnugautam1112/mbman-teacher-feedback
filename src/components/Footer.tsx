@@ -9,10 +9,10 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   const developers = [
-    { name: "Bishnu Gautam", role: "Full Stack Developer", icon: "👨‍💻" },
-    { name: "Sayuja Bhattarai", role: "UI/UX Designer", icon: "🎨" },
-    { name: "Saras Shrestha", role: "Frontend Developer", icon: "⚡" },
-    { name: "Lalit Budhathoki", role: "Backend Architect", icon: "⚙️" },
+    { name: "Bishnu Gautam", role: "Full Stack Developer", image: "/bishnu.png" },
+    { name: "Sayuja Bhattarai", role: "UI/UX Designer", image: "/sayuja.png" },
+    { name: "Saras Shrestha", role: "Frontend Developer", image: "/saras.png" },
+    { name: "Lalit Budhathoki", role: "Backend Architect", image: "/lalit.png" },
   ];
 
   return (
@@ -113,8 +113,8 @@ export default function Footer() {
             <div className="flex flex-col gap-3">
               {developers.map((dev) => (
                 <div key={dev.name} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 transition-colors cursor-default">
-                  <div className="w-8 h-8 rounded-full bg-blue-900/50 flex items-center justify-center text-sm border border-blue-500/20">
-                    {dev.icon}
+                  <div className="w-8 h-8 rounded-full bg-blue-900/50 flex items-center justify-center text-sm border border-blue-500/20 relative overflow-hidden shadow-sm shadow-blue-500/20">
+                    <Image src={dev.image} alt={dev.name} fill className="object-cover" />
                   </div>
                   <div>
                     <h5 className="text-sm font-bold text-blue-200">{dev.name}</h5>
