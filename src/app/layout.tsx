@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   title: "Anomalous Teacher Feedback System | MBMAN",
   description: "A secure, 100% anonymous feedback and review system for teachers at Madan Bhandari Memorial Academy Nepal.",
   verification: {
-    google: "ro693PVgKzq1RCtDvyrw56_f6T0adACF8VI6kIjicBw",
+    google: "1RCDcs5VCPbDAqmemZICIdsaA2crFQ7jGkeRdRrFd2I",
   },
 };
 
