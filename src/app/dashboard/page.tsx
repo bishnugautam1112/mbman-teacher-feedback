@@ -15,6 +15,7 @@ type TeacherRank = {
 };
 
 type Period = "daily" | "weekly" | "monthly" | "all";
+type DeptFilter = "ALL" | "COMPUTER" | "CIVIL" | "ARCHITECTURE";
 
 const PERIOD_LABELS: Record<Period, string> = {
   daily: "Today",
@@ -48,6 +49,7 @@ function StarDisplay({ rating }: { rating: number }) {
 
 export default function LeaderboardPage() {
   const [period, setPeriod] = useState<Period>("all");
+  const [deptFilter, setDeptFilter] = useState<DeptFilter>("ALL");
   const [leaderboard, setLeaderboard] = useState<TeacherRank[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -69,6 +71,14 @@ export default function LeaderboardPage() {
       setLoading(false);
     }
   };
+
+  // Filter and re-rank based on department selection
+  const filteredLeaderboard = leaderboard
+    .filter((t) => {
+      if (deptFilter === "ALL") return true;
+      return t.department === deptFilter || t.department === "BASIC_SCIENCE";
+    })
+    .map((t, index) => ({ ...t, rank: index + 1 }));
 
   return (
     <div className="w-full">
@@ -100,6 +110,25 @@ export default function LeaderboardPage() {
         ))}
       </div>
 
+      {/* Department Tabs */}
+      {Array.from(new Set(leaderboard.filter(t => t.department !== "BASIC_SCIENCE").map(t => t.department))).length > 1 && (
+        <div className="flex gap-2 mb-8 flex-wrap border-b border-slate-200 pb-4">
+          {(["ALL", ...Array.from(new Set(leaderboard.filter(t => t.department !== "BASIC_SCIENCE").map(t => t.department)))] as DeptFilter[]).map((d) => (
+            <button
+              key={d}
+              onClick={() => setDeptFilter(d)}
+              className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${
+                deptFilter === d
+                  ? "bg-slate-800 text-white"
+                  : "bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-800"
+              }`}
+            >
+              {d === "ALL" ? "Overall" : d.charAt(0) + d.slice(1).toLowerCase()}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Loading State */}
       {loading ? (
         <div className="flex flex-col gap-4">
@@ -119,7 +148,7 @@ export default function LeaderboardPage() {
             </div>
           ))}
         </div>
-      ) : leaderboard.length === 0 ? (
+      ) : filteredLeaderboard.length === 0 ? (
         /* Empty State */
         <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center">
           <div className="text-5xl mb-4">📊</div>
@@ -136,9 +165,9 @@ export default function LeaderboardPage() {
         /* Leaderboard List */
         <div className="flex flex-col gap-4">
           {/* Top 3 Podium */}
-          {leaderboard.length >= 3 && (
+          {filteredLeaderboard.length >= 3 && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-              {leaderboard.slice(0, 3).map((teacher, idx) => (
+              {filteredLeaderboard.slice(0, 3).map((teacher, idx) => (
                 <motion.div
                   key={teacher.id}
                   initial={{ opacity: 0, y: 20 }}
@@ -201,7 +230,7 @@ export default function LeaderboardPage() {
 
           {/* Remaining teachers (or all if < 3) */}
           <AnimatePresence>
-            {leaderboard.slice(leaderboard.length >= 3 ? 3 : 0).map((teacher, idx) => (
+            {filteredLeaderboard.slice(filteredLeaderboard.length >= 3 ? 3 : 0).map((teacher, idx) => (
               <motion.div
                 key={teacher.id}
                 initial={{ opacity: 0, x: -20 }}

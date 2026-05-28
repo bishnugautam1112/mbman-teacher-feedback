@@ -133,7 +133,6 @@ export default function KycVerificationCard({ currentStatus }: { currentStatus: 
                   <option value="COMPUTER">Computer Eng</option>
                   <option value="CIVIL">Civil Eng</option>
                   <option value="ARCHITECTURE">Architecture</option>
-                  <option value="BASIC_SCIENCE">Basic Science</option>
                 </select>
               </div>
               <div className="flex flex-col gap-1.5 w-32">
