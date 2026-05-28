@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 
 type TeacherRank = {
   id: string;
@@ -168,19 +169,19 @@ export default function LeaderboardPage() {
           {filteredLeaderboard.length >= 3 && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
               {filteredLeaderboard.slice(0, 3).map((teacher, idx) => (
-                <motion.div
-                  key={teacher.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: idx * 0.1 }}
-                  className={`relative rounded-3xl p-6 border-2 text-center overflow-hidden ${
-                    idx === 0
-                      ? "bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-200 shadow-lg shadow-amber-100/50 md:order-2 md:-mt-4"
-                      : idx === 1
-                      ? "bg-gradient-to-br from-slate-50 to-gray-50 border-slate-300 shadow-md md:order-1"
-                      : "bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200 shadow-md md:order-3"
-                  }`}
-                >
+                <Link key={teacher.id} href={`/dashboard/leaderboard/${teacher.id}`} className={`block md:order-${idx === 0 ? '2' : idx === 1 ? '1' : '3'} ${idx === 0 ? 'md:-mt-4' : ''}`}>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.1 }}
+                    className={`relative rounded-3xl p-6 border-2 text-center overflow-hidden hover:shadow-xl transition-shadow cursor-pointer ${
+                      idx === 0
+                        ? "bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-200 shadow-lg shadow-amber-100/50"
+                        : idx === 1
+                        ? "bg-gradient-to-br from-slate-50 to-gray-50 border-slate-300 shadow-md"
+                        : "bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200 shadow-md"
+                    }`}
+                  >
                   {/* Rank Badge */}
                   <div className="text-4xl mb-3">{RANK_BADGES[teacher.rank]}</div>
 
@@ -223,7 +224,8 @@ export default function LeaderboardPage() {
                       {teacher.totalReviews !== 1 ? "s" : ""}
                     </span>
                   </div>
-                </motion.div>
+                  </motion.div>
+                </Link>
               ))}
             </div>
           )}
@@ -231,13 +233,13 @@ export default function LeaderboardPage() {
           {/* Remaining teachers (or all if < 3) */}
           <AnimatePresence>
             {filteredLeaderboard.slice(filteredLeaderboard.length >= 3 ? 3 : 0).map((teacher, idx) => (
-              <motion.div
-                key={teacher.id}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: idx * 0.05 }}
-                className="bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-md hover:border-blue-100 transition-all group"
-              >
+              <Link key={teacher.id} href={`/dashboard/leaderboard/${teacher.id}`} className="block">
+                <motion.div
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: idx * 0.05 }}
+                  className="bg-white rounded-2xl border border-slate-200 p-5 hover:shadow-lg hover:border-blue-300 transition-all group cursor-pointer"
+                >
                 <div className="flex items-center gap-4">
                   {/* Rank */}
                   <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center font-black text-slate-500 text-lg group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors shrink-0">
@@ -285,8 +287,9 @@ export default function LeaderboardPage() {
                       </div>
                     </div>
                   </div>
-                </div>
-              </motion.div>
+                  </div>
+                </motion.div>
+              </Link>
             ))}
           </AnimatePresence>
         </div>

@@ -81,6 +81,9 @@ export async function POST(req: Request) {
       select: { batchYear: true },
     });
 
+    // Flag as anomalous if the rating is highly critical (<= 2)
+    const isAnomalous = rating <= 2;
+
     // Create the anonymous review — NO studentId is ever saved
     await prisma.review.create({
       data: {
@@ -90,6 +93,7 @@ export async function POST(req: Request) {
         moderatedText,
         rating,
         studentBatchYear: studentRecord?.batchYear || null,
+        isAnomalous,
       },
     });
 
@@ -143,6 +147,8 @@ export async function GET(req: Request) {
         moderatedText: true,
         studentBatchYear: true,
         createdAt: true,
+        teacherReply: true,
+        isAnomalous: true,
         // rawContent is intentionally excluded — only sanitized text is exposed
       },
     });

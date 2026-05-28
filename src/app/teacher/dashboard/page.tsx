@@ -12,6 +12,8 @@ type ReviewData = {
   moderatedText: string | null;
   studentBatchYear: number | null;
   createdAt: string;
+  teacherReply: string | null;
+  isAnomalous: boolean;
 };
 
 type Stats = {
@@ -28,6 +30,9 @@ export default function TeacherDashboard() {
   const [loading, setLoading] = useState(true);
   const [fbSubscribed, setFbSubscribed] = useState(false);
   const [activeFilter, setActiveFilter] = useState<"all" | "recent" | "best" | "critical">("all");
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyContent, setReplyContent] = useState("");
+  const [isSubmittingReply, setIsSubmittingReply] = useState(false);
 
   const user = session?.user as any;
 
@@ -73,6 +78,32 @@ export default function TeacherDashboard() {
       console.error("Failed to fetch dashboard data:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleReply = async (reviewId: string) => {
+    if (!replyContent.trim()) return;
+    setIsSubmittingReply(true);
+    try {
+      const res = await fetch("/api/teacher/reply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reviewId, replyContent }),
+      });
+      if (res.ok) {
+        const { review } = await res.json();
+        // Update local state
+        setReviews(reviews.map((r: any) => r.id === reviewId ? { ...r, teacherReply: review.teacherReply } : r));
+        setReplyingTo(null);
+        setReplyContent("");
+      } else {
+        alert("Failed to submit reply");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error submitting reply");
+    } finally {
+      setIsSubmittingReply(false);
     }
   };
 
@@ -347,6 +378,54 @@ export default function TeacherDashboard() {
                   <p className="text-slate-700 font-medium leading-relaxed">
                     &ldquo;{fb.moderatedText || "Feedback submitted (pending AIRA AI moderation)"}&rdquo;
                   </p>
+                  
+                  {fb.teacherReply ? (
+                    <div className="mt-4 pt-4 border-t border-slate-100">
+                      <div className="bg-blue-50/50 p-4 rounded-xl border border-blue-100">
+                        <span className="text-xs font-bold text-blue-600 uppercase tracking-wider mb-1 block">Your Reply</span>
+                        <p className="text-sm font-medium text-slate-800">{fb.teacherReply}</p>
+                      </div>
+                    </div>
+                  ) : fb.isAnomalous || fb.rating <= 2 ? (
+                    <div className="mt-4 pt-4 border-t border-slate-100">
+                      {replyingTo === fb.id ? (
+                        <div className="flex flex-col gap-2">
+                          <textarea 
+                            value={replyContent}
+                            onChange={(e) => setReplyContent(e.target.value)}
+                            placeholder="Write a constructive reply to the student..."
+                            className="w-full text-sm p-3 rounded-lg border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none resize-none"
+                            rows={3}
+                          />
+                          <div className="flex justify-end gap-2">
+                            <button 
+                              onClick={() => { setReplyingTo(null); setReplyContent(""); }}
+                              className="px-3 py-1.5 text-xs font-bold text-slate-500 hover:bg-slate-100 rounded-md"
+                              disabled={isSubmittingReply}
+                            >
+                              Cancel
+                            </button>
+                            <button 
+                              onClick={() => handleReply(fb.id)}
+                              className="px-3 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-md disabled:opacity-50"
+                              disabled={isSubmittingReply}
+                            >
+                              {isSubmittingReply ? "Posting..." : "Post Reply"}
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button 
+                          onClick={() => { setReplyingTo(fb.id); setReplyContent(""); }}
+                          className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
+                          Reply to Review
+                        </button>
+                      )}
+                    </div>
+                  ) : null}
+
                   <div className="mt-4 pt-4 border-t border-slate-100 flex items-center gap-2 text-xs font-bold text-emerald-600">
                     <span className="bg-emerald-100 p-1 rounded-full">✨</span> AIRA AI Sanitized & Verified
                   </div>

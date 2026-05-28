@@ -51,6 +51,7 @@ model User {
   accounts            Account[]
   kycDocument         KycDocument?
   sessions            Session[]
+  aiParameters        Json?
 }
 
 model VerificationToken {
@@ -89,6 +90,8 @@ model Review {
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
   studentBatchYear Int?
+  teacherReply     String?
+  isAnomalous      Boolean  @default(false)
 }
 
 model Favorite {
