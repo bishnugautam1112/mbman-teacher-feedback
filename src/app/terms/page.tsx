@@ -20,10 +20,15 @@ export default function TermsOfService() {
         <div className="prose prose-slate max-w-none">
           <section className="mb-8">
             <h2 className="text-xl font-bold text-slate-800 mb-4">1. Acceptance of Terms</h2>
-            <p className="text-slate-600 leading-relaxed">
+            <p className="text-slate-600 leading-relaxed mb-4">
               By accessing and using the Madan Bhandari Memorial Academy Nepal (MBMAN) Teacher Feedback System, 
               you accept and agree to be bound by the terms and provision of this agreement.
             </p>
+            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+              <p className="text-sm text-blue-800 font-medium">
+                <strong>Project Status:</strong> This platform is a 6th-semester academic project developed by Computer Engineering students, conducted under the approval and supervision of the MBMAN College Administration.
+              </p>
+            </div>
           </section>
 
           <section className="mb-8">

@@ -20,11 +20,16 @@ export default function PrivacyPolicy() {
         <div className="prose prose-slate max-w-none">
           <section className="mb-8">
             <h2 className="text-xl font-bold text-slate-800 mb-4">1. Introduction</h2>
-            <p className="text-slate-600 leading-relaxed">
+            <p className="text-slate-600 leading-relaxed mb-4">
               Welcome to the Madan Bhandari Memorial Academy Nepal (MBMAN) Teacher Feedback System. 
               We are committed to protecting your personal information and your right to privacy. 
               This privacy policy applies to all information collected through our website (https://mbman-teacher-feedback.vercel.app).
             </p>
+            <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+              <p className="text-sm text-blue-800 font-medium">
+                <strong>Academic Disclaimer:</strong> This platform is an official 6th-semester academic project, developed and deployed with the formal approval of the MBMAN College Administration.
+              </p>
+            </div>
           </section>
 
           <section className="mb-8">
