@@ -9,9 +9,9 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   const developers = [
-    { name: "Bishnu Gautam", role: "Full Stack Developer", image: "/bishnu.png" },
-    { name: "Sayuja Bhattarai", role: "UI/UX Designer", image: "/sayuja.png" },
-    { name: "Saras Shrestha", role: "Frontend Developer", image: "/saras.png" },
+    { name: "Bishnu Gautam", role: "Full Stack Developer", image: "/bishnu.jpg" },
+    { name: "Sayuja Bhattarai", role: "UI/UX Designer", image: "/sayuja.jpg" },
+    { name: "Saras Shrestha", role: "Frontend Developer", image: "/saras.jpg" },
     { name: "Lalit Budhathoki", role: "Backend Architect", image: "/lalit.png" },
   ];
 
