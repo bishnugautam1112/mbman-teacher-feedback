@@ -46,8 +46,12 @@ export async function GET(req: Request) {
     
     // If student, filter by their department and BASIC_SCIENCE
     if (user.role === "STUDENT") {
+      const dbUser = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: { department: true }
+      });
       teacherWhereClause.OR = [
-        { department: user.department },
+        { department: dbUser?.department || undefined },
         { department: "BASIC_SCIENCE" }
       ];
     }

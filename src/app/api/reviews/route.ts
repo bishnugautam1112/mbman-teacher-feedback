@@ -85,7 +85,7 @@ export async function POST(req: Request) {
     const isAnomalous = rating <= 2;
 
     // Create the anonymous review — NO studentId is ever saved
-    await prisma.review.create({
+    const review = await prisma.review.create({
       data: {
         dailyHash,
         teacherId,
@@ -99,6 +99,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       message: "Your anonymous feedback has been submitted and AI-sanitized. Thank you!",
+      reviewId: review.id,
     });
   } catch (error: any) {
     console.error("Review Submission Error:", error);

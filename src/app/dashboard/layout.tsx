@@ -38,6 +38,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const navLinks = [
     { name: "Leaderboard", path: "/dashboard", show: true },
     { name: "Review Teachers", path: "/dashboard/teachers", show: user?.role === "STUDENT", locked: isPendingKyc },
+    { name: "My Inbox", path: "/dashboard/inbox", show: user?.role === "STUDENT", locked: isPendingKyc },
     { name: "Admin Panel", path: "/dashboard/admin", show: user?.role === "ADMIN" || user?.role === "SUPER_ADMIN" },
   ];
 

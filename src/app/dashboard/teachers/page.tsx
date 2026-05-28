@@ -17,12 +17,18 @@ export default async function TeachersPage() {
     redirect("/dashboard");
   }
 
+  // Fetch user's actual department from DB to ensure it's up to date after KYC
+  const dbUser = await prisma.user.findUnique({
+    where: { id: user.id },
+    select: { department: true }
+  });
+
   // Fetch teachers for the student's department + Basic Science teachers
   const teachers = await prisma.user.findMany({
     where: { 
       role: "TEACHER",
       OR: [
-        { department: user.department },
+        { department: dbUser?.department || undefined },
         { department: "BASIC_SCIENCE" }
       ]
     },

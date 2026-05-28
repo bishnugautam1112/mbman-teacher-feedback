@@ -43,6 +43,16 @@ export default function TeacherListClient({ teachers }: { teachers: Teacher[] })
       if (!res.ok) throw new Error(data.error || "Failed to submit feedback");
 
       setSuccess(data.message);
+      
+      // Save reviewId to localStorage for the Anonymous Inbox
+      if (data.reviewId) {
+        const savedReviews = JSON.parse(localStorage.getItem("myReviews") || "[]");
+        if (!savedReviews.includes(data.reviewId)) {
+          savedReviews.push(data.reviewId);
+          localStorage.setItem("myReviews", JSON.stringify(savedReviews));
+        }
+      }
+
       // Reset form
       setTimeout(() => {
         setSelectedTeacher(null);

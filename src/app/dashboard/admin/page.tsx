@@ -50,6 +50,7 @@ export default function AdminPage() {
 
   // KYC State
   const [kycs, setKycs] = useState<any[]>([]);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   // Teacher Create State
   const [newTeacher, setNewTeacher] = useState({ name: "", email: "", department: "COMPUTER", image: "" });
@@ -513,7 +514,7 @@ export default function AdminPage() {
                         <img
                           src={kyc.documentUrl}
                           alt="ID Card"
-                          onClick={() => window.open(kyc.documentUrl, "_blank")}
+                          onClick={() => setSelectedImage(kyc.documentUrl)}
                           style={{
                             width: "80px",
                             height: "50px",
@@ -529,7 +530,11 @@ export default function AdminPage() {
                           href={kyc.documentUrl}
                           target="_blank"
                           rel="noreferrer"
-                          style={{ color: "#2563eb", fontWeight: 700, fontSize: "0.85rem", textDecoration: "none" }}
+                          style={{ color: "#2563eb", fontWeight: 700, fontSize: "0.85rem", textDecoration: "none", cursor: "pointer" }}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setSelectedImage(kyc.documentUrl);
+                          }}
                         >
                           View ID Card ↗
                         </a>
@@ -550,6 +555,58 @@ export default function AdminPage() {
               </tbody>
             </table>
           )}
+        </div>
+      )}
+
+      {/* KYC Image Modal */}
+      {selectedImage && (
+        <div
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.8)",
+            backdropFilter: "blur(4px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 9999,
+            padding: "2rem",
+          }}
+          onClick={() => setSelectedImage(null)}
+        >
+          <div style={{ position: "relative", maxWidth: "90%", maxHeight: "90%" }}>
+            <button
+              onClick={() => setSelectedImage(null)}
+              style={{
+                position: "absolute",
+                top: "-3rem",
+                right: "-1rem",
+                background: "white",
+                color: "black",
+                border: "none",
+                borderRadius: "50%",
+                width: "2.5rem",
+                height: "2.5rem",
+                fontSize: "1.25rem",
+                fontWeight: "bold",
+                cursor: "pointer",
+              }}
+            >
+              ×
+            </button>
+            <img
+              src={selectedImage}
+              alt="KYC Document Full Size"
+              style={{
+                maxWidth: "100%",
+                maxHeight: "90vh",
+                objectFit: "contain",
+                borderRadius: "0.5rem",
+                boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
+              }}
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
         </div>
       )}
 
