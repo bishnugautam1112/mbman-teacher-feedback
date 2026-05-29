@@ -50,6 +50,7 @@ export default function AdminPage() {
 
   // KYC State
   const [kycs, setKycs] = useState<any[]>([]);
+  const [kycFilter, setKycFilter] = useState<"PENDING" | "APPROVED" | "REJECTED" | "ALL">("PENDING");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   // Teacher Create State
@@ -83,6 +84,9 @@ export default function AdminPage() {
 
   useEffect(() => {
     fetchKycs();
+  }, [kycFilter]);
+
+  useEffect(() => {
     fetchUsers();
     if (isSuperAdmin) fetchAiraHealth();
     fetchReviews();
@@ -101,7 +105,7 @@ export default function AdminPage() {
 
   // ---- Fetch Functions ----
   const fetchKycs = async () => {
-    const res = await fetch("/api/admin/kyc");
+    const res = await fetch(`/api/admin/kyc?status=${kycFilter}`);
     if (res.ok) setKycs(await res.json());
   };
 
@@ -471,11 +475,37 @@ export default function AdminPage() {
       {/* ========== KYC TAB ========== */}
       {activeTab === "KYC" && (
         <div className={styles.tableContainer}>
+          {/* Filter Dropdown */}
+          {isSuperAdmin && (
+            <div style={{ padding: "1rem", borderBottom: "1px solid #e2e8f0", display: "flex", justifyContent: "flex-end" }}>
+              <select
+                value={kycFilter}
+                onChange={(e) => setKycFilter(e.target.value as any)}
+                style={{
+                  padding: "0.5rem 1rem",
+                  borderRadius: "0.5rem",
+                  border: "1px solid #e2e8f0",
+                  fontSize: "0.875rem",
+                  fontWeight: 600,
+                  outline: "none",
+                  cursor: "pointer"
+                }}
+              >
+                <option value="PENDING">Pending Approval</option>
+                <option value="APPROVED">Approved</option>
+                <option value="REJECTED">Rejected</option>
+                <option value="ALL">All KYC Documents</option>
+              </select>
+            </div>
+          )}
+
           {kycs.length === 0 ? (
             <div className={styles.emptyState}>
-              <div style={{ fontSize: "2.5rem", marginBottom: "0.75rem" }}>✅</div>
-              <div style={{ fontWeight: 700, color: "#0f172a", marginBottom: "0.25rem" }}>All Clear!</div>
-              No pending KYC documents to review.
+              <div style={{ fontSize: "2.5rem", marginBottom: "0.75rem" }}>{kycFilter === "PENDING" ? "✅" : "📭"}</div>
+              <div style={{ fontWeight: 700, color: "#0f172a", marginBottom: "0.25rem" }}>
+                {kycFilter === "PENDING" ? "All Clear!" : "No Records"}
+              </div>
+              {kycFilter === "PENDING" ? "No pending KYC documents to review." : `No ${kycFilter.toLowerCase()} KYC documents found.`}
             </div>
           ) : (
             <table className={styles.table}>
@@ -485,6 +515,7 @@ export default function AdminPage() {
                   <th>Email</th>
                   <th>Department</th>
                   <th>Document</th>
+                  <th>Status</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -541,13 +572,40 @@ export default function AdminPage() {
                       )}
                     </td>
                     <td>
+                      <span
+                        style={{
+                          fontSize: "0.65rem",
+                          fontWeight: 800,
+                          padding: "0.2rem 0.6rem",
+                          borderRadius: "999px",
+                          ...(kyc.status === "APPROVED"
+                            ? { background: "#f0fdf4", color: "#16a34a", border: "1px solid #bbf7d0" }
+                            : kyc.status === "PENDING"
+                            ? { background: "#fffbeb", color: "#d97706", border: "1px solid #fde68a" }
+                            : kyc.status === "REJECTED"
+                            ? { background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca" }
+                            : { background: "#f8fafc", color: "#94a3b8", border: "1px solid #e2e8f0" }),
+                        }}
+                      >
+                        {kyc.status}
+                      </span>
+                    </td>
+                    <td>
                       <div className={styles.actions}>
-                        <button onClick={() => handleKycAction(kyc.id, "APPROVE")} className={styles.btnApprove}>
-                          ✓ Approve
-                        </button>
-                        <button onClick={() => handleKycAction(kyc.id, "REJECT")} className={styles.btnReject}>
-                          ✗ Reject
-                        </button>
+                        {kyc.status === "PENDING" ? (
+                          <>
+                            <button onClick={() => handleKycAction(kyc.id, "APPROVE")} className={styles.btnApprove}>
+                              ✓ Approve
+                            </button>
+                            <button onClick={() => handleKycAction(kyc.id, "REJECT")} className={styles.btnReject}>
+                              ✗ Reject
+                            </button>
+                          </>
+                        ) : (
+                          <span style={{ fontSize: "0.75rem", color: "#94a3b8", fontWeight: 600 }}>
+                            {kyc.reviewedAt ? new Date(kyc.reviewedAt).toLocaleDateString() : "—"}
+                          </span>
+                        )}
                       </div>
                     </td>
                   </tr>

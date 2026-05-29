@@ -2,14 +2,22 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdminOrAbove } from "@/lib/permissions";
 
-export async function GET() {
+export async function GET(req: Request) {
   if (!(await requireAdminOrAbove())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
   }
 
   try {
+    const { searchParams } = new URL(req.url);
+    const statusParam = searchParams.get("status");
+    
+    // Only fetch by status if it's PENDING, APPROVED, or REJECTED. Otherwise fetch all.
+    const whereClause = ["PENDING", "APPROVED", "REJECTED"].includes(statusParam || "PENDING")
+      ? { status: statusParam as any }
+      : {}; // ALL
+
     const pendingKycs = await prisma.kycDocument.findMany({
-      where: { status: "PENDING" },
+      where: whereClause,
       include: {
         user: {
           select: { name: true, email: true, department: true }
