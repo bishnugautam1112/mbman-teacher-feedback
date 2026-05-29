@@ -110,30 +110,44 @@ export async function callGoogleAIWithRetry(prompt: string, initialModel: string
 }
 
 /**
- * AI Moderation Function
+ * AI Moderation Function (2-way Sanitization)
  */
-export async function moderateReview(rawText: string): Promise<string> {
+export async function moderateReview(rawText: string): Promise<{ thirdPersonSummary: string, firstPersonSanitized: string }> {
   const prompt = `
     You are an AI moderator for a college teacher feedback system.
     A student has submitted the following feedback anonymously.
-    Your task is to analyze the text. 
-    If it is extremely vulgar, offensive, or uses informal "wreck" language (e.g., "f**k sir", "worst teacher ever"), 
-    translate it into a highly professional, constructive summary that extracts the core frustration without the toxicity.
-    For example, if the student says "he sucks at teaching and his voice is annoying", 
-    you translate it to: "A student expressed difficulty following the lectures and suggested improvements in vocal delivery."
+    Your task is to analyze the text and output a JSON object containing two sanitized versions.
     
-    If the text is already professional and constructive, return it EXACTLY as it is, or slightly polished for grammar.
-    Do NOT add any introductory text like "Here is the moderated version:". Just return the final text.
+    Rules for sanitization:
+    - If the text is extremely vulgar, offensive, or uses informal "wreck" language (e.g., "f**k sir", "worst teacher ever"), extract the core frustration without the toxicity.
+    - If it's already professional, just polish the grammar slightly.
+    
+    You MUST return ONLY a valid JSON object with the following schema:
+    {
+      "thirdPersonSummary": "A highly professional, constructive 3rd-person summary (e.g. 'A student expressed difficulty following the lectures.')",
+      "firstPersonSanitized": "A polished, non-toxic 1st-person version that sounds like the student wrote it (e.g. 'I felt that it was difficult to follow the lectures.')"
+    }
     
     Student Feedback:
     "${rawText}"
   `;
 
   try {
-    return await callGoogleAIWithRetry(prompt, "gemini-3.1-flash-lite");
+    const response = await callGoogleAIWithRetry(prompt, "gemini-3.1-flash-lite");
+    // Clean up potential markdown blocks from AI
+    const jsonStr = response.replace(/^```json/m, "").replace(/```$/m, "").trim();
+    const result = JSON.parse(jsonStr);
+    return {
+      thirdPersonSummary: result.thirdPersonSummary || "Feedback received.",
+      firstPersonSanitized: result.firstPersonSanitized || "Feedback received."
+    };
   } catch (error) {
     console.error("Moderation AI Failed completely:", error);
     // Silent fallback
-    return "Feedback received. (AIRA AI moderation temporarily unavailable)";
+    const fallback = "Feedback received. (AIRA AI moderation temporarily unavailable)";
+    return {
+      thirdPersonSummary: fallback,
+      firstPersonSanitized: fallback
+    };
   }
 }

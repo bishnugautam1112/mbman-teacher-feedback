@@ -73,7 +73,7 @@ export async function POST(req: Request) {
     }
 
     // Run AI moderation on the raw feedback via AIRA AI
-    const moderatedText = await moderateReview(rawContent);
+    const { thirdPersonSummary, firstPersonSanitized } = await moderateReview(rawContent);
 
     // Fetch the student's batch year (stored during KYC, never linked to the review)
     const studentRecord = await prisma.user.findUnique({
@@ -90,7 +90,8 @@ export async function POST(req: Request) {
         dailyHash,
         teacherId,
         rawContent: rawContent.trim(),
-        moderatedText,
+        moderatedText: thirdPersonSummary,
+        studentFacingText: firstPersonSanitized,
         rating,
         studentBatchYear: studentRecord?.batchYear || null,
         isAnomalous,

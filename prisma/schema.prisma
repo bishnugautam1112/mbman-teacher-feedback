@@ -87,6 +87,7 @@ model Review {
   teacherId        String
   rawContent       String
   moderatedText    String?
+  studentFacingText String?
   rating           Int
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt

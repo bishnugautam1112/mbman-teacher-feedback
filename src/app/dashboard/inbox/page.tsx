@@ -6,7 +6,8 @@ import { motion, AnimatePresence } from "framer-motion";
 type Review = {
   id: string;
   rating: number;
-  moderatedText: string;
+  moderatedText: string | null;
+  studentFacingText: string | null;
   teacherReply: string | null;
   createdAt: string;
   teacher: {
@@ -109,7 +110,7 @@ export default function InboxPage() {
 
                 {/* Content */}
                 <div className="p-6">
-                  <p className="text-slate-700 leading-relaxed font-medium">"{review.moderatedText}"</p>
+                  <p className="text-slate-700 leading-relaxed font-medium">"{review.studentFacingText || review.moderatedText}"</p>
                   
                   {/* Teacher Reply */}
                   {review.teacherReply ? (
