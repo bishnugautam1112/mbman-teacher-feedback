@@ -26,6 +26,7 @@ export default function SignIn() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [otpExpiresIn, setOtpExpiresIn] = useState<number | null>(null);
+  const [resendCountdown, setResendCountdown] = useState(0);
 
   // New States
   const [showPassword, setShowPassword] = useState(false);
@@ -45,6 +46,16 @@ export default function SignIn() {
     }
     return () => clearInterval(interval);
   }, [otpExpiresIn, tab, step]);
+
+  useEffect(() => {
+    let resendInterval: NodeJS.Timeout;
+    if (resendCountdown > 0 && step === "OTP") {
+      resendInterval = setInterval(() => {
+        setResendCountdown((prev) => (prev > 0 ? prev - 1 : 0));
+      }, 1000);
+    }
+    return () => clearInterval(resendInterval);
+  }, [resendCountdown, step]);
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60).toString().padStart(2, '0');
@@ -100,6 +111,7 @@ export default function SignIn() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to send OTP");
       setStep("OTP");
+      setResendCountdown(60);
     } catch (err: any) {
       setError(err.message || "Something went wrong.");
     } finally {
@@ -146,6 +158,7 @@ export default function SignIn() {
       setSuccess("OTP sent successfully to your email.");
       setOtpExpiresIn(3 * 60);
       setStep("OTP");
+      setResendCountdown(60);
     } catch (err: any) {
       setError(err.message || "Something went wrong.");
     } finally {
@@ -388,6 +401,18 @@ export default function SignIn() {
                 <div className="flex flex-col gap-1.5">
                   <input type="text" placeholder="123456" maxLength={6} value={otp} onChange={(e) => setOtp(e.target.value)} required className="w-full px-4 py-3 text-center tracking-[0.5em] text-lg font-bold rounded-xl border border-slate-200 bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 outline-none transition-all" />
                   <button onClick={tab === "REGISTER" ? handleVerifyRegisterOTP : handleVerifyForgotOTP} disabled={loading} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-[0_4px_14px_0_rgba(37,99,235,0.39)] hover:shadow-[0_6px_20px_rgba(37,99,235,0.23)] transition-all mt-4">{loading ? "Verifying..." : "Verify OTP"}</button>
+                   
+                   <div className="flex flex-col items-center mt-4">
+                     <p className="text-xs text-slate-500 font-medium mb-2">Tip: Check your spam folder if you can't find it.</p>
+                     <button 
+                       type="button"
+                       onClick={tab === "REGISTER" ? handleRegisterSendOTP : handleForgotPassword} 
+                       disabled={resendCountdown > 0 || loading} 
+                       className="text-sm font-bold text-blue-600 disabled:text-slate-400 disabled:cursor-not-allowed hover:text-blue-800 transition"
+                     >
+                       {resendCountdown > 0 ? `Resend OTP in ${resendCountdown}s` : "Resend OTP"}
+                     </button>
+                   </div>
                 </div>
              )}
 
