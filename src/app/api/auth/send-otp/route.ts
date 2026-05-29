@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     }
 
     if (!email.endsWith("@gmail.com") && !email.endsWith("@mbman.edu.np")) {
-      return NextResponse.json({ error: "Invalid domain" }, { status: 403 });
+      return NextResponse.json({ error: "Please use gmail or mbman.edu.np mail, other are not allowed." }, { status: 403 });
     }
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
