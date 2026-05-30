@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
   serverExternalPackages: [],
   // @ts-ignore - allowedDevOrigins is valid but NextConfig types might be outdated
   allowedDevOrigins: ['suitor-strict-fraction.ngrok-free.dev', 'localhost:3000'],
+  transpilePackages: ["framer-motion"],
   typescript: {
     ignoreBuildErrors: true,
   },
