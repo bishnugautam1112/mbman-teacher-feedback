@@ -51,3 +51,22 @@ export async function GET() {
     return NextResponse.json({ error: "Failed to fetch reviews" }, { status: 500 });
   }
 }
+
+// DELETE a review — SUPER_ADMIN only
+export async function DELETE(req: Request) {
+  if (!(await requireSuperAdmin())) return NextResponse.json({ error: "Only Super Admin can delete reviews" }, { status: 403 });
+
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+
+    if (!id) return NextResponse.json({ error: "Missing Review ID" }, { status: 400 });
+
+    await prisma.review.delete({ where: { id } });
+
+    return NextResponse.json({ message: "Review deleted successfully" });
+  } catch (error) {
+    console.error("Admin review delete error:", error);
+    return NextResponse.json({ error: "Failed to delete review" }, { status: 500 });
+  }
+}

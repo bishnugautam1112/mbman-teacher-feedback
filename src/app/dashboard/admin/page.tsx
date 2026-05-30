@@ -205,6 +205,17 @@ export default function AdminPage() {
     fetchUsers();
   };
 
+  const handleDeleteReview = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this review? This action cannot be undone.")) return;
+    const res = await fetch(`/api/admin/reviews?id=${id}`, { method: "DELETE" });
+    if (res.ok) {
+      fetchReviews();
+    } else {
+      const data = await res.json();
+      alert(data.error || "Failed to delete review");
+    }
+  };
+
   // ---- Filters ----
   const filteredUsers = users.filter((u) => {
     const term = userSearch.toLowerCase();
@@ -1012,6 +1023,7 @@ export default function AdminPage() {
                     <th>AI Moderated Output</th>
                     <th style={{ width: "90px" }}>Batch</th>
                     <th style={{ width: "100px" }}>Date</th>
+                    {isSuperAdmin && <th style={{ width: "80px", textAlign: "right" }}>Actions</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -1099,6 +1111,26 @@ export default function AdminPage() {
                         <td style={{ fontSize: "0.75rem", color: "#94a3b8", fontWeight: 600 }}>
                           {formatDate(r.createdAt)}
                         </td>
+                        {isSuperAdmin && (
+                          <td style={{ textAlign: "right" }}>
+                            <button
+                              onClick={() => handleDeleteReview(r.id)}
+                              style={{
+                                padding: "0.4rem 0.6rem",
+                                fontSize: "0.75rem",
+                                background: "#fee2e2",
+                                color: "#dc2626",
+                                border: "1px solid #fecaca",
+                                borderRadius: "0.5rem",
+                                fontWeight: 700,
+                                cursor: "pointer",
+                              }}
+                              title="Delete Review"
+                            >
+                              🗑️
+                            </button>
+                          </td>
+                        )}
                       </tr>
                     );
                   })}
