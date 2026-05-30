@@ -7,7 +7,13 @@ export async function GET() {
   if (!(await requireAdminOrAbove())) return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
 
   try {
+    const callerRole = await getSessionRole();
+    const isSuper = isSuperAdmin(callerRole || "");
+
     const users = await prisma.user.findMany({
+      where: isSuper ? undefined : {
+        role: { not: "SUPER_ADMIN" }
+      },
       include: {
         kycDocument: {
           select: { status: true, documentUrl: true }
@@ -53,8 +59,18 @@ export async function PUT(req: Request) {
 
     // Prevent privilege escalation: only SUPER_ADMIN can assign ADMIN or SUPER_ADMIN roles
     const callerRole = await getSessionRole();
-    if (role && (role === "ADMIN" || role === "SUPER_ADMIN") && !isSuperAdmin(callerRole || "")) {
+    const isSuper = isSuperAdmin(callerRole || "");
+    
+    if (role && (role === "ADMIN" || role === "SUPER_ADMIN") && !isSuper) {
       return NextResponse.json({ error: "Only Super Admin can assign admin roles" }, { status: 403 });
+    }
+
+    // Prevent regular ADMIN from modifying a SUPER_ADMIN
+    if (!isSuper) {
+      const targetUser = await prisma.user.findUnique({ where: { id } });
+      if (targetUser?.role === "SUPER_ADMIN") {
+        return NextResponse.json({ error: "You cannot modify a Super Admin" }, { status: 403 });
+      }
     }
 
     const updateData: any = {};
