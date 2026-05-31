@@ -519,8 +519,9 @@ export default function AdminPage() {
               {kycFilter === "PENDING" ? "No pending KYC documents to review." : `No ${kycFilter.toLowerCase()} KYC documents found.`}
             </div>
           ) : (
-            <table className={styles.table}>
-              <thead>
+            <div className={styles.tableContainer} style={{ overflowX: "auto" }}>
+              <table className={styles.table} style={{ minWidth: "800px" }}>
+                <thead>
                 <tr>
                   <th>Student Name</th>
                   <th>Email</th>
@@ -623,6 +624,7 @@ export default function AdminPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           )}
         </div>
       )}
