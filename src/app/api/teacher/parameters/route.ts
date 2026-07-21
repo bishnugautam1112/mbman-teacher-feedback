@@ -28,12 +28,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Teacher not found" }, { status: 404 });
     }
 
-    // If already generated, return them immediately
-    if (teacher.aiParameters) {
-      return NextResponse.json({ parameters: teacher.aiParameters });
-    }
-
-    // Otherwise, generate them on the fly based on their recent reviews
+    // Check remaining reviews first
     const reviews = await prisma.review.findMany({
       where: { teacherId },
       select: { rawContent: true, rating: true },
@@ -42,7 +37,18 @@ export async function GET(req: Request) {
     });
 
     if (reviews.length === 0) {
+      if (teacher.aiParameters !== null) {
+        await prisma.user.update({
+          where: { id: teacherId },
+          data: { aiParameters: null }
+        });
+      }
       return NextResponse.json({ parameters: null });
+    }
+
+    // If already generated and reviews exist, return them
+    if (teacher.aiParameters) {
+      return NextResponse.json({ parameters: teacher.aiParameters });
     }
 
     const reviewsText = reviews.map(r => `Rating: ${r.rating}/5. Comment: "${r.rawContent}"`).join("\n");

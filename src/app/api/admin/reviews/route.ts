@@ -62,7 +62,17 @@ export async function DELETE(req: Request) {
 
     if (!id) return NextResponse.json({ error: "Missing Review ID" }, { status: 400 });
 
+    const review = await prisma.review.findUnique({ where: { id } });
+    if (!review) return NextResponse.json({ error: "Review not found" }, { status: 404 });
+
+    // Delete the review
     await prisma.review.delete({ where: { id } });
+
+    // Reset cached AI parameters for this teacher so parameters are recalculated fresh
+    await prisma.user.update({
+      where: { id: review.teacherId },
+      data: { aiParameters: null }
+    });
 
     return NextResponse.json({ message: "Review deleted successfully" });
   } catch (error: any) {

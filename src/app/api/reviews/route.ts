@@ -98,6 +98,12 @@ export async function POST(req: Request) {
       },
     });
 
+    // Reset cached AI parameters so newly submitted feedback is included in future AI analysis
+    await prisma.user.update({
+      where: { id: teacherId },
+      data: { aiParameters: null }
+    });
+
     return NextResponse.json({
       message: "Your anonymous feedback has been submitted and AI-sanitized. Thank you!",
       reviewId: review.id,
