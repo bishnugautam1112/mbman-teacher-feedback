@@ -48,10 +48,10 @@ model User {
   password            String?
   forcePasswordChange Boolean      @default(false)
   batchYear           Int?
+  aiParameters        Json?
   accounts            Account[]
   kycDocument         KycDocument?
   sessions            Session[]
-  aiParameters        Json?
 }
 
 model VerificationToken {
@@ -71,29 +71,29 @@ model ResetToken {
 }
 
 model KycDocument {
-  id          String    @id @default(cuid())
-  userId      String    @unique
-  documentUrl String
+  id              String    @id @default(cuid())
+  userId          String    @unique
+  documentUrl     String
   status          KycStatus @default(PENDING)
-  rejectionReason String?
   submittedAt     DateTime  @default(now())
   reviewedAt      DateTime?
+  rejectionReason String?
   user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Review {
-  id               String   @id @default(cuid())
-  dailyHash        String   @unique
-  teacherId        String
-  rawContent       String
-  moderatedText    String?
+  id                String   @id @default(cuid())
+  dailyHash         String   @unique
+  teacherId         String
+  rawContent        String
+  moderatedText     String?
+  rating            Int
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  studentBatchYear  Int?
+  isAnomalous       Boolean  @default(false)
+  teacherReply      String?
   studentFacingText String?
-  rating           Int
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-  studentBatchYear Int?
-  teacherReply     String?
-  isAnomalous      Boolean  @default(false)
 }
 
 model Favorite {

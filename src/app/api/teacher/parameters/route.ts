@@ -63,7 +63,7 @@ export async function GET(req: Request) {
       ]
     `;
 
-    const aiResponse = await callGoogleAIWithRetry(prompt, "gemini-3.1-flash-lite");
+    const aiResponse = await callGoogleAIWithRetry(prompt, "gemini-2.0-flash");
     
     // Clean up potential markdown formatting from AI response
     const cleanJsonStr = aiResponse.replace(/```json/gi, '').replace(/```/g, '').trim();

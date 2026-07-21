@@ -36,19 +36,19 @@ class GeminiKeyManager {
 export const geminiManager = new GeminiKeyManager();
 
 /**
- * Robust Google AI Caller with Retries (Translating your Python logic)
+ * Robust Google AI Caller with Retries
  */
-export async function callGoogleAIWithRetry(prompt: string, initialModel: string = "gemini-3.1-flash-lite"): Promise<string> {
+export async function callGoogleAIWithRetry(prompt: string, initialModel: string = "gemini-2.0-flash"): Promise<string> {
   let lastError: any;
   
-  // The absolute no-fail fallback list (starts with the requested model, cascades down)
+  // The absolute no-fail fallback list using valid Gemini API model names
   const fallbackModels = [
     initialModel,
-    "gemini-3.5-flash",
-    "gemini-3-flash",
-    "gemini-2.5-flash",
-    "gemini-2.5-flash-lite",
-    "gemini-1.5-flash"
+    "gemini-2.0-flash",
+    "gemini-2.0-flash-lite",
+    "gemini-1.5-flash",
+    "gemini-1.5-flash-8b",
+    "gemini-1.5-pro"
   ];
 
   // Remove duplicates just in case initialModel is already in the list
@@ -68,7 +68,7 @@ export async function callGoogleAIWithRetry(prompt: string, initialModel: string
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: {
             temperature: 0.15,
-            maxOutputTokens: 250,
+            maxOutputTokens: 350,
           }
         };
 
@@ -114,40 +114,47 @@ export async function callGoogleAIWithRetry(prompt: string, initialModel: string
  */
 export async function moderateReview(rawText: string): Promise<{ thirdPersonSummary: string, firstPersonSanitized: string }> {
   const prompt = `
-    You are an AI moderator for a college teacher feedback system.
-    A student has submitted the following feedback anonymously.
-    Your task is to analyze the text and output a JSON object containing two sanitized versions.
-    
-    Rules for sanitization:
-    - If the text is extremely vulgar, offensive, or uses informal "wreck" language (e.g., "f**k sir", "worst teacher ever"), extract the core frustration without the toxicity.
-    - If it's already professional, just polish the grammar slightly.
-    
+    You are AIRA, an intelligent, natural AI feedback moderator for a college teacher feedback system in Nepal (MBMAN).
+    A student has submitted the following feedback anonymously:
+    "${rawText}"
+
+    CRITICAL RULES FOR MODERATION:
+    1. LANGUAGE & SCRIPT PRESERVATION:
+       - Maintain the EXACT same language and script/romanization style as the input!
+       - If the student wrote in Romanized Nepali (e.g. "thank you sir model question paper dinu vako maa"), output MUST be in Romanized Nepali!
+       - If written in Nepali script (Devanagari), output MUST be in Nepali script.
+       - If written in English, output MUST be in English.
+       - NEVER force-translate Romanized Nepali into formal corporate English!
+
+    2. SENSITIVITY & MAGICAL EDITING:
+       - If the review is GOOD, POSITIVE, or NORMAL CONSTRUCTIVE FEEDBACK, keep the student's authentic review and expression intact! Do NOT rewrite it into dry corporate summaries.
+       - If the feedback contains PROFANITY, VULGARITY, SLANG, or TOXIC ATTACKS:
+         - Magically filter out or edit ONLY the bad/vulgar/abusive words.
+         - Transform toxic rants into polite, constructive, natural feedback in the SAME language/romanization.
+         - Make sure the output reads naturally, authentically, and believably as a real student feedback on the dashboard.
+
     You MUST return ONLY a valid JSON object with the following schema:
     {
-      "thirdPersonSummary": "A highly professional, constructive 3rd-person summary (e.g. 'A student expressed difficulty following the lectures.')",
-      "firstPersonSanitized": "A polished, non-toxic 1st-person version that sounds like the student wrote it (e.g. 'I felt that it was difficult to follow the lectures.')"
+      "thirdPersonSummary": "The natural, moderated student review in the original language/romanization.",
+      "firstPersonSanitized": "A 1st-person version in the original language/romanization with all bad words magically cleaned."
     }
-    
-    Student Feedback:
-    "${rawText}"
   `;
 
   try {
-    const response = await callGoogleAIWithRetry(prompt, "gemini-3.1-flash-lite");
+    const response = await callGoogleAIWithRetry(prompt, "gemini-2.0-flash");
     // Clean up potential markdown blocks from AI
     const jsonStr = response.replace(/^```json/m, "").replace(/```$/m, "").trim();
     const result = JSON.parse(jsonStr);
     return {
-      thirdPersonSummary: result.thirdPersonSummary || "Feedback received.",
-      firstPersonSanitized: result.firstPersonSanitized || "Feedback received."
+      thirdPersonSummary: result.thirdPersonSummary || rawText,
+      firstPersonSanitized: result.firstPersonSanitized || rawText
     };
   } catch (error) {
     console.error("Moderation AI Failed completely:", error);
-    // Silent fallback
-    const fallback = "Feedback received. (AIRA AI moderation temporarily unavailable)";
+    // Silent fallback to rawText so student feedback always looks authentic on dashboard
     return {
-      thirdPersonSummary: fallback,
-      firstPersonSanitized: fallback
+      thirdPersonSummary: rawText,
+      firstPersonSanitized: rawText
     };
   }
 }

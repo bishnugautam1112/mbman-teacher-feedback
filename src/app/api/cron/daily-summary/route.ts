@@ -52,7 +52,7 @@ export async function GET(req: Request) {
         ${compiledFeedback}
       `;
 
-      const summaryText = await callGoogleAIWithRetry(prompt, "gemini-3.1-flash-lite");
+      const summaryText = await callGoogleAIWithRetry(prompt, "gemini-2.0-flash");
 
       // 4. Send to Facebook Messenger via Graph API
       await sendFacebookDM(teacher.facebookPsid!, summaryText);
