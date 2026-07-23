@@ -2,23 +2,23 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import Footer from "@/components/Footer";
+import Footer from "@/frontend/components/Footer";
 import { motion } from "framer-motion";
 import { useSession } from "next-auth/react";
 
 export default function Home() {
   const { data: session, status } = useSession();
   const containerVariants = {
-    hidden: { opacity: 0 },
+    hidden: { opacity: 1 },
     visible: { 
       opacity: 1,
-      transition: { staggerChildren: 0.2, delayChildren: 0.1 }
+      transition: { staggerChildren: 0.1 }
     }
   };
 
   const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: { y: 0, opacity: 1, transition: { type: "spring" as const, stiffness: 100 } }
+    hidden: { y: 0, opacity: 1 },
+    visible: { y: 0, opacity: 1 }
   };
 
   return (
@@ -30,10 +30,7 @@ export default function Home() {
       <div className="absolute bottom-[-10%] left-[20%] w-[40%] h-[40%] bg-purple-400 rounded-full mix-blend-multiply filter blur-[120px] opacity-20 animate-blob animation-delay-4000 pointer-events-none"></div>
 
       {/* Header (Glassmorphism) */}
-      <motion.header 
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.5 }}
+      <header 
         className="sticky top-0 z-50 flex items-center justify-between p-4 md:px-8 bg-white/70 backdrop-blur-md border-b border-white/20 shadow-sm"
       >
         <Link href="/" className="flex items-center gap-2 group cursor-pointer">
@@ -73,13 +70,10 @@ export default function Home() {
             </Link>
           )}
         </nav>
-      </motion.header>
+      </header>
 
       {/* Hero Section */}
-      <motion.main 
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
+      <main 
         className="flex-1 flex flex-col items-center justify-center text-center px-6 py-20 md:py-32 max-w-6xl mx-auto relative z-10"
       >
         
@@ -125,12 +119,8 @@ export default function Home() {
         </motion.div>
 
         {/* Features Grid */}
-        <motion.div 
+        <div 
           id="features" 
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          variants={containerVariants}
           className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full text-left relative z-10"
         >
           {/* Feature 1 */}
@@ -166,8 +156,8 @@ export default function Home() {
             </p>
           </motion.div>
           
-        </motion.div>
-      </motion.main>
+        </div>
+      </main>
       
       <div className="relative z-20">
         <Footer />

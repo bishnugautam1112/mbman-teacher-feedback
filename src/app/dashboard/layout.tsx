@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useState } from "react";
 import { usePathname } from "next/navigation";
-import KycVerificationCard from "@/components/KycVerificationCard";
+import KycVerificationCard from "@/frontend/components/KycVerificationCard";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();

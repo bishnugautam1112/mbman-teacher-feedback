@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/backend/db/prisma";
 import nodemailer from "nodemailer";
-import { rateLimit } from "@/lib/rate-limit";
+import { rateLimit } from "@/backend/services/rate-limit";
 
 export async function POST(req: Request) {
   try {

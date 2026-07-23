@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/backend/db/prisma";
 
 // GET handler for Facebook Webhook verification
 export async function GET(request: Request) {

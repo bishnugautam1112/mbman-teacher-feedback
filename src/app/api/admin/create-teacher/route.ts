@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { requireSuperAdmin } from "@/lib/permissions";
+import { prisma } from "@/backend/db/prisma";
+import { requireSuperAdmin } from "@/backend/services/permissions";
 import bcrypt from "bcryptjs";
 
 export async function POST(req: Request) {

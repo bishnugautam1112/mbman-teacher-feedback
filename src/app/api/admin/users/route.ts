@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { requireAdminOrAbove, getSessionRole, isSuperAdmin } from "@/lib/permissions";
+import { prisma } from "@/backend/db/prisma";
+import { requireAdminOrAbove, getSessionRole, isSuperAdmin } from "@/backend/services/permissions";
 
 // GET all users with KYC info
 export async function GET() {

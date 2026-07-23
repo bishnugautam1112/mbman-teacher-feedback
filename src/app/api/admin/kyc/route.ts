@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { requireAdminOrAbove } from "@/lib/permissions";
+import { prisma } from "@/backend/db/prisma";
+import { requireAdminOrAbove } from "@/backend/services/permissions";
 
 export async function GET(req: Request) {
   if (!(await requireAdminOrAbove())) {

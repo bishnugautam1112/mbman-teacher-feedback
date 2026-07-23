@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
-import { generateDailyHash } from "@/lib/anonymity";
-import { moderateReview } from "@/lib/gemini";
+import { authOptions } from "@/backend/auth/auth";
+import { prisma } from "@/backend/db/prisma";
+import { generateDailyHash } from "@/backend/services/anonymity";
+import { moderateReview } from "@/backend/services/gemini";
 
 /**
  * POST /api/reviews

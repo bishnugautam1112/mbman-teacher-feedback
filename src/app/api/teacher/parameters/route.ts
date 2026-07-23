@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
-import { callGoogleAIWithRetry } from "@/lib/gemini";
+import { authOptions } from "@/backend/auth/auth";
+import { prisma } from "@/backend/db/prisma";
+import { callGoogleAIWithRetry } from "@/backend/services/gemini";
 
 export async function GET(req: Request) {
   try {

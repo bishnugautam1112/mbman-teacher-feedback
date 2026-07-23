@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { geminiManager, callGoogleAIWithRetry } from "@/lib/gemini";
-import { requireSuperAdmin } from "@/lib/permissions";
+import { geminiManager, callGoogleAIWithRetry } from "@/backend/services/gemini";
+import { requireSuperAdmin } from "@/backend/services/permissions";
 
 /**
  * GET /api/admin/gemini-health

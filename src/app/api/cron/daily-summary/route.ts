@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { callGoogleAIWithRetry } from "@/lib/gemini";
+import { prisma } from "@/backend/db/prisma";
+import { callGoogleAIWithRetry } from "@/backend/services/gemini";
 
 // This route should be pinged by Vercel Cron at 9 PM daily
 export async function GET(req: Request) {

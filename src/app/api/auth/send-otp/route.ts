@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/backend/db/prisma";
 
 export async function POST(req: Request) {
   try {

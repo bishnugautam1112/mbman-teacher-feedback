@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { requireAdminOrAbove, requireSuperAdmin } from "@/lib/permissions";
+import { prisma } from "@/backend/db/prisma";
+import { requireAdminOrAbove, requireSuperAdmin } from "@/backend/services/permissions";
 
 // Get all teachers — both ADMIN and SUPER_ADMIN
 export async function GET() {

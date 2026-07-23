@@ -1,6 +1,6 @@
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { authOptions } from "@/backend/auth/auth";
+import { prisma } from "@/backend/db/prisma";
 import TeacherListClient from "./TeacherListClient";
 import { redirect } from "next/navigation";
 
