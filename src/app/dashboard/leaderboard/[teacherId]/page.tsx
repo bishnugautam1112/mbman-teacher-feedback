@@ -140,7 +140,7 @@ export default function TeacherProfilePage() {
       {/* AI Parameters */}
       <div className="mb-10">
         <h2 className="text-xl font-bold text-slate-900 mb-4 flex items-center gap-2">
-          <span className="text-blue-600">✨</span> AIRA AI Analysis
+          <span className="text-blue-600">✨</span> AI Analysis
         </h2>
         
         {generatingParams ? (

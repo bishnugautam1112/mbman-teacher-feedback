@@ -125,8 +125,8 @@ export default function Home() {
         >
           {/* Feature 1 */}
           <motion.div variants={itemVariants} className="bg-white/70 backdrop-blur-xl p-8 rounded-3xl shadow-lg shadow-slate-200/50 border border-white hover:shadow-xl hover:border-blue-100 hover:-translate-y-2 transition-all duration-300 group">
-            <div className="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center text-3xl mb-6 shadow-inner group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-              🛡️
+            <div className="w-14 h-14 bg-blue-100/80 rounded-2xl flex items-center justify-center mb-6 shadow-inner group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 text-blue-600">
+              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
             </div>
             <h3 className="text-xl font-bold text-slate-900 mb-3 tracking-tight">100% Anonymous</h3>
             <p className="text-slate-600 leading-relaxed">
@@ -136,10 +136,10 @@ export default function Home() {
           
           {/* Feature 2 */}
           <motion.div variants={itemVariants} className="bg-white/70 backdrop-blur-xl p-8 rounded-3xl shadow-lg shadow-slate-200/50 border border-white hover:shadow-xl hover:border-indigo-100 hover:-translate-y-2 transition-all duration-300 group">
-            <div className="w-14 h-14 bg-indigo-100 rounded-2xl flex items-center justify-center text-3xl mb-6 shadow-inner group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300">
-              🤖
+            <div className="w-14 h-14 bg-indigo-100/80 rounded-2xl flex items-center justify-center mb-6 shadow-inner group-hover:scale-110 group-hover:-rotate-3 transition-transform duration-300 text-indigo-600">
+              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
             </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-3 tracking-tight">AIRA Powered</h3>
+            <h3 className="text-xl font-bold text-slate-900 mb-3 tracking-tight">AI Powered</h3>
             <p className="text-slate-600 leading-relaxed">
               Feedback is securely sanitized into professional summaries using Advanced AI, filtering hate-speech while preserving the core message.
             </p>
@@ -147,8 +147,8 @@ export default function Home() {
           
           {/* Feature 3 */}
           <motion.div variants={itemVariants} className="bg-white/70 backdrop-blur-xl p-8 rounded-3xl shadow-lg shadow-slate-200/50 border border-white hover:shadow-xl hover:border-purple-100 hover:-translate-y-2 transition-all duration-300 group">
-            <div className="w-14 h-14 bg-purple-100 rounded-2xl flex items-center justify-center text-3xl mb-6 shadow-inner group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300">
-              🏆
+            <div className="w-14 h-14 bg-purple-100/80 rounded-2xl flex items-center justify-center mb-6 shadow-inner group-hover:scale-110 group-hover:rotate-3 transition-transform duration-300 text-purple-600">
+              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
             </div>
             <h3 className="text-xl font-bold text-slate-900 mb-3 tracking-tight">Fair Leaderboards</h3>
             <p className="text-slate-600 leading-relaxed">

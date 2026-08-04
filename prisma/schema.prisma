@@ -48,6 +48,7 @@ model User {
   password            String?
   forcePasswordChange Boolean      @default(false)
   batchYear           Int?
+  receiveDailySummary Boolean      @default(true)
   aiParameters        Json?
   accounts            Account[]
   kycDocument         KycDocument?

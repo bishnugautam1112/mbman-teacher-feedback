@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/backend/db/prisma";
 import { requireAdminOrAbove } from "@/backend/services/permissions";
+import { emailQueue, getKycApprovedTemplate, getKycRejectedTemplate } from "@/backend/services/email";
 
 export async function GET(req: Request) {
   if (!(await requireAdminOrAbove())) {
@@ -55,12 +56,24 @@ export async function PUT(req: Request) {
       include: { user: true }
     });
 
-    // If approved, update user's role and verified status
-    if (newStatus === "APPROVED") {
-      await prisma.user.update({
-        where: { id: updatedKyc.userId },
-        data: { isVerified: true }
-      });
+    // Send email notification to student based on decision
+    if (updatedKyc.user?.email) {
+      if (newStatus === "APPROVED") {
+        emailQueue.sendNormalPriority(
+          updatedKyc.user.email,
+          "Your MBMAN KYC Verification is Approved",
+          getKycApprovedTemplate(updatedKyc.user.name || "Student")
+        );
+      } else {
+        emailQueue.sendNormalPriority(
+          updatedKyc.user.email,
+          "MBMAN KYC Document Update Required",
+          getKycRejectedTemplate(
+            updatedKyc.user.name || "Student",
+            updatedKyc.rejectionReason || "Uploaded ID photo was blurry or invalid."
+          )
+        );
+      }
     }
 
     return NextResponse.json({ message: `KYC ${newStatus} successfully` });

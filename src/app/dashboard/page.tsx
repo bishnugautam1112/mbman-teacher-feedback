@@ -85,10 +85,15 @@ export default function LeaderboardPage() {
     <div className="w-full">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-black text-slate-900 tracking-tight">
-          🏆 Faculty Leaderboard
-        </h1>
-        <p className="text-slate-500 font-medium mt-1 max-w-2xl">
+        <div className="flex items-center gap-3 mb-1">
+          <div className="w-10 h-10 rounded-xl bg-amber-100/80 flex items-center justify-center text-amber-600">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
+          </div>
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight">
+            Faculty Leaderboard
+          </h1>
+        </div>
+        <p className="text-slate-500 font-medium max-w-2xl">
           Rankings based on anonymous student feedback. Scores combine average
           rating (70%) with review volume (30%).
         </p>
@@ -152,7 +157,9 @@ export default function LeaderboardPage() {
       ) : filteredLeaderboard.length === 0 ? (
         /* Empty State */
         <div className="bg-white rounded-3xl border border-slate-200 p-12 text-center">
-          <div className="text-5xl mb-4">📊</div>
+          <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto text-slate-400 mb-4">
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+          </div>
           <h3 className="text-xl font-bold text-slate-800 mb-2">
             No Reviews Yet
           </h3>
@@ -183,11 +190,17 @@ export default function LeaderboardPage() {
                     }`}
                   >
                   {/* Rank Badge */}
-                  <div className="text-4xl mb-3">{RANK_BADGES[teacher.rank]}</div>
+                  <div className="mb-3">
+                    <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-black tracking-wider uppercase ${
+                      idx === 0 ? "bg-amber-400 text-amber-950 shadow-sm" : idx === 1 ? "bg-slate-300 text-slate-800" : "bg-orange-300 text-orange-950"
+                    }`}>
+                      RANK #{teacher.rank}
+                    </span>
+                  </div>
 
                   {/* Avatar */}
                   <div
-                    className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center text-2xl mb-3 ${
+                    className={`w-16 h-16 mx-auto rounded-full flex items-center justify-center text-slate-400 mb-3 overflow-hidden ${
                       idx === 0
                         ? "bg-amber-100 ring-4 ring-amber-300/50"
                         : idx === 1
@@ -202,7 +215,7 @@ export default function LeaderboardPage() {
                         className="w-full h-full rounded-full object-cover"
                       />
                     ) : (
-                      "👨‍🏫"
+                      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                     )}
                   </div>
 
@@ -242,12 +255,12 @@ export default function LeaderboardPage() {
                 >
                 <div className="flex items-center gap-4">
                   {/* Rank */}
-                  <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center font-black text-slate-500 text-lg group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors shrink-0">
-                    {RANK_BADGES[teacher.rank] || `#${teacher.rank}`}
+                  <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center font-black text-slate-600 text-sm group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors shrink-0">
+                    #{teacher.rank}
                   </div>
 
                   {/* Avatar */}
-                  <div className="w-11 h-11 bg-slate-100 rounded-full flex items-center justify-center text-lg shrink-0">
+                  <div className="w-11 h-11 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 shrink-0 overflow-hidden border border-slate-200">
                     {teacher.image ? (
                       <img
                         src={teacher.image}
@@ -255,7 +268,7 @@ export default function LeaderboardPage() {
                         className="w-full h-full rounded-full object-cover"
                       />
                     ) : (
-                      "👨‍🏫"
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                     )}
                   </div>
 

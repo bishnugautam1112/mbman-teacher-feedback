@@ -10,7 +10,7 @@ import { moderateReview } from "@/backend/services/gemini";
  * Submits an anonymous review for a teacher.
  * - Validates session and KYC status
  * - Generates a zero-linkage daily hash (HMAC-SHA256)
- * - Runs AI moderation via AIRA AI
+ * - Runs AI moderation via AI
  * - Stores the review without any student identity
  */
 export async function POST(req: Request) {
@@ -72,7 +72,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // Run AI moderation on the raw feedback via AIRA AI
+    // Run AI moderation on the raw feedback via AI
     const { thirdPersonSummary, firstPersonSanitized } = await moderateReview(rawContent);
 
     // Fetch the student's batch year (stored during KYC, never linked to the review)

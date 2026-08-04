@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/backend/db/prisma";
 import { callGoogleAIWithRetry } from "@/backend/services/gemini";
+import { emailQueue, getTeacherSummaryTemplate } from "@/backend/services/email";
 
 // This route should be pinged by Vercel Cron at 9 PM daily
 export async function GET(req: Request) {
@@ -11,11 +12,11 @@ export async function GET(req: Request) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    // 2. Fetch all teachers who have a Facebook PSID linked
     const teachers = await prisma.user.findMany({
       where: { 
         role: "TEACHER",
-        facebookPsid: { not: null } 
+        facebookPsid: { not: null },
+        receiveDailySummary: true
       }
     });
 
@@ -40,7 +41,7 @@ export async function GET(req: Request) {
       // Compile all moderated feedback into one string
       const compiledFeedback = dailyReviews.map((r: any) => `- Rating: ${r.rating}/10\n${r.moderatedText}`).join("\n\n");
 
-      // Summarize using AIRA AI
+      // Summarize using AI
       const prompt = `
         You are an educational assistant summarizing daily feedback for a teacher named ${teacher.name}.
         Here is all the anonymous student feedback they received today.
@@ -52,10 +53,19 @@ export async function GET(req: Request) {
         ${compiledFeedback}
       `;
 
-      const summaryText = await callGoogleAIWithRetry(prompt, "gemini-2.0-flash");
+      const summaryText = await callGoogleAIWithRetry(prompt, "gemini-3.5-flash-lite");
 
       // 4. Send to Facebook Messenger via Graph API
       await sendFacebookDM(teacher.facebookPsid!, summaryText);
+
+      // 5. Send Low-Priority email notification to teacher via throttled queue
+      if (teacher.email) {
+        emailQueue.sendLowPriority(
+          teacher.email,
+          "AI Daily Feedback Summary Ready",
+          getTeacherSummaryTemplate(teacher.name || "Teacher", new Date().toLocaleDateString())
+        );
+      }
     }
 
     return NextResponse.json({ message: "Daily summaries sent successfully" });

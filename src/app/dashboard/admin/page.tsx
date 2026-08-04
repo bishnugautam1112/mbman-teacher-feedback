@@ -29,7 +29,7 @@ type ReviewAudit = {
   createdAt: string;
 };
 
-type AIRAHealth = {
+type AIHealth = {
   status: string;
   totalKeys: number;
   currentKeyIndex: number;
@@ -69,9 +69,9 @@ export default function AdminPage() {
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [deletingReviewId, setDeletingReviewId] = useState<string | null>(null);
 
-  // AIRA AI Health State
-  const [aira, setAira] = useState<AIRAHealth | null>(null);
-  const [airaLoading, setAiraLoading] = useState(false);
+  // AI Health State
+  const [ai, setAi] = useState<AIHealth | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
 
   // System stats
   const [systemStats, setSystemStats] = useState({ totalUsers: 0, totalStudents: 0, totalTeachers: 0, totalReviews: 0 });
@@ -89,7 +89,7 @@ export default function AdminPage() {
 
   useEffect(() => {
     fetchUsers();
-    if (isSuperAdmin) fetchAiraHealth();
+    if (isSuperAdmin) fetchAiHealth();
     fetchReviews();
   }, [isSuperAdmin]);
 
@@ -130,13 +130,13 @@ export default function AdminPage() {
     }
   };
 
-  const fetchAiraHealth = async () => {
-    setAiraLoading(true);
+  const fetchAiHealth = async () => {
+    setAiLoading(true);
     try {
       const res = await fetch("/api/admin/gemini-health");
-      if (res.ok) setAira(await res.json());
+      if (res.ok) setAi(await res.json());
     } finally {
-      setAiraLoading(false);
+      setAiLoading(false);
     }
   };
 
@@ -249,10 +249,10 @@ export default function AdminPage() {
   // Build tabs based on role
   const tabs: { key: Tab; label: string; icon: string; count?: number }[] = [
     // System Health — SUPER_ADMIN only
-    ...(isSuperAdmin ? [{ key: "HEALTH" as Tab, label: "System Health", icon: "🩺" }] : []),
-    { key: "KYC", label: "KYC Approvals", icon: "📋", count: kycs.length },
-    { key: "USERS", label: "User Management", icon: "👥", count: users.length },
-    { key: "REVIEWS", label: "Review Audit", icon: "🔍", count: reviews.length },
+    ...(isSuperAdmin ? [{ key: "HEALTH" as Tab, label: "System Health", icon: "" }] : []),
+    { key: "KYC", label: "KYC Approvals", icon: "", count: kycs.length },
+    { key: "USERS", label: "User Management", icon: "", count: users.length },
+    { key: "REVIEWS", label: "Review Audit", icon: "", count: reviews.length },
   ];
 
   return (
@@ -315,7 +315,10 @@ export default function AdminPage() {
               transition: "all 0.2s",
             }}
           >
-            <span>{t.icon}</span>
+            {t.key === "HEALTH" && <svg style={{ width: "1.25rem", height: "1.25rem" }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>}
+            {t.key === "KYC" && <svg style={{ width: "1.25rem", height: "1.25rem" }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>}
+            {t.key === "USERS" && <svg style={{ width: "1.25rem", height: "1.25rem" }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>}
+            {t.key === "REVIEWS" && <svg style={{ width: "1.25rem", height: "1.25rem" }} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>}
             {t.label}
             {t.count !== undefined && (
               <span
@@ -340,10 +343,10 @@ export default function AdminPage() {
           {/* Quick Stats Row */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "1rem" }}>
             {[
-              { label: "Total Users", value: systemStats.totalUsers, icon: "👥", color: "#2563eb" },
-              { label: "Students", value: systemStats.totalStudents, icon: "🎓", color: "#059669" },
-              { label: "Teachers", value: systemStats.totalTeachers, icon: "👨‍🏫", color: "#7c3aed" },
-              { label: "Total Reviews", value: systemStats.totalReviews, icon: "📝", color: "#ea580c" },
+              { label: "Total Users", value: systemStats.totalUsers, color: "#2563eb" },
+              { label: "Students", value: systemStats.totalStudents, color: "#059669" },
+              { label: "Teachers", value: systemStats.totalTeachers, color: "#7c3aed" },
+              { label: "Total Reviews", value: systemStats.totalReviews, color: "#ea580c" },
             ].map((s) => (
               <div
                 key={s.label}
@@ -359,7 +362,6 @@ export default function AdminPage() {
                   overflow: "hidden",
                 }}
               >
-                <div style={{ fontSize: "1.75rem", opacity: 0.08, position: "absolute", top: "0.75rem", right: "1rem" }}>{s.icon}</div>
                 <span style={{ fontSize: "0.75rem", fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                   {s.label}
                 </span>
@@ -368,7 +370,7 @@ export default function AdminPage() {
             ))}
           </div>
 
-          {/* AIRA AI Health Card */}
+          {/* AI Health Card */}
           <div
             style={{
               background: "white",
@@ -379,14 +381,14 @@ export default function AdminPage() {
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
               <div>
-                <h2 style={{ fontSize: "1.25rem", fontWeight: 800, color: "#0f172a" }}>🤖 AIRA AI Status</h2>
+                <h2 style={{ fontSize: "1.25rem", fontWeight: 800, color: "#0f172a" }}>AI System Status</h2>
                 <p style={{ fontSize: "0.8rem", color: "#94a3b8", fontWeight: 500, marginTop: "0.25rem" }}>
-                  Live health check of the AIRA AI moderation system
+                  Live health check of the AI moderation engine
                 </p>
               </div>
               <button
-                onClick={fetchAiraHealth}
-                disabled={airaLoading}
+                onClick={fetchAiHealth}
+                disabled={aiLoading}
                 style={{
                   padding: "0.5rem 1rem",
                   borderRadius: "0.75rem",
@@ -398,16 +400,15 @@ export default function AdminPage() {
                   color: "#475569",
                 }}
               >
-                {airaLoading ? "Checking..." : "🔄 Re-check"}
+                {aiLoading ? "Checking..." : "Re-check Health"}
               </button>
             </div>
 
-            {airaLoading && !aira ? (
+            {aiLoading && !ai ? (
               <div style={{ textAlign: "center", padding: "3rem", color: "#94a3b8" }}>
-                <div style={{ fontSize: "2rem", marginBottom: "0.5rem" }}>⏳</div>
-                Pinging AIRA AI...
+                Pinging AI...
               </div>
-            ) : aira ? (
+            ) : ai ? (
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem" }}>
                 {/* Status */}
                 <div
@@ -415,13 +416,13 @@ export default function AdminPage() {
                     padding: "1.25rem",
                     borderRadius: "1rem",
                     background:
-                      aira.status === "LIVE"
+                      ai.status === "LIVE"
                         ? "linear-gradient(135deg, #f0fdf4, #dcfce7)"
-                        : aira.status === "DEGRADED"
+                        : ai.status === "DEGRADED"
                         ? "linear-gradient(135deg, #fffbeb, #fef3c7)"
                         : "linear-gradient(135deg, #fef2f2, #fee2e2)",
                     border: `1px solid ${
-                      aira.status === "LIVE" ? "#bbf7d0" : aira.status === "DEGRADED" ? "#fde68a" : "#fecaca"
+                      ai.status === "LIVE" ? "#bbf7d0" : ai.status === "DEGRADED" ? "#fde68a" : "#fecaca"
                     }`,
                   }}
                 >
@@ -433,10 +434,20 @@ export default function AdminPage() {
                       fontSize: "1.5rem",
                       fontWeight: 900,
                       marginTop: "0.25rem",
-                      color: aira.status === "LIVE" ? "#16a34a" : aira.status === "DEGRADED" ? "#d97706" : "#dc2626",
+                      color: ai.status === "LIVE" ? "#16a34a" : ai.status === "DEGRADED" ? "#d97706" : "#dc2626",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.5rem"
                     }}
                   >
-                    {aira.status === "LIVE" ? "🟢" : aira.status === "DEGRADED" ? "🟡" : "🔴"} {aira.status}
+                    <span style={{
+                      width: "10px",
+                      height: "10px",
+                      borderRadius: "50%",
+                      backgroundColor: ai.status === "LIVE" ? "#16a34a" : ai.status === "DEGRADED" ? "#d97706" : "#dc2626",
+                      display: "inline-block"
+                    }}></span>
+                    {ai.status}
                   </div>
                 </div>
 
@@ -446,7 +457,7 @@ export default function AdminPage() {
                     API Key Pool
                   </div>
                   <div style={{ fontSize: "1.5rem", fontWeight: 900, marginTop: "0.25rem", color: "#0f172a" }}>
-                    {aira.totalKeys} <span style={{ fontSize: "0.8rem", fontWeight: 500, color: "#94a3b8" }}>keys loaded</span>
+                    {ai.totalKeys} <span style={{ fontSize: "0.8rem", fontWeight: 500, color: "#94a3b8" }}>keys loaded</span>
                   </div>
                 </div>
 
@@ -456,7 +467,7 @@ export default function AdminPage() {
                     Response Latency
                   </div>
                   <div style={{ fontSize: "1.5rem", fontWeight: 900, marginTop: "0.25rem", color: "#0f172a" }}>
-                    {aira.latencyMs !== null ? `${aira.latencyMs}ms` : "—"}
+                    {ai.latencyMs !== null ? `${ai.latencyMs}ms` : "—"}
                   </div>
                 </div>
 
@@ -466,12 +477,12 @@ export default function AdminPage() {
                     Last Checked
                   </div>
                   <div style={{ fontSize: "0.875rem", fontWeight: 700, marginTop: "0.5rem", color: "#0f172a" }}>
-                    {aira.checkedAt ? new Date(aira.checkedAt).toLocaleTimeString() : "—"}
+                    {ai.checkedAt ? new Date(ai.checkedAt).toLocaleTimeString() : "—"}
                   </div>
                 </div>
 
                 {/* Error message if present */}
-                {aira.errorMessage && (
+                {ai.errorMessage && (
                   <div
                     style={{
                       gridColumn: "1 / -1",
@@ -484,7 +495,7 @@ export default function AdminPage() {
                       fontWeight: 600,
                     }}
                   >
-                    ⚠️ {aira.errorMessage}
+                    System Alert: {ai.errorMessage}
                   </div>
                 )}
               </div>
@@ -522,11 +533,12 @@ export default function AdminPage() {
 
           {kycs.length === 0 ? (
             <div className={styles.emptyState}>
-              <div style={{ fontSize: "2.5rem", marginBottom: "0.75rem" }}>{kycFilter === "PENDING" ? "✅" : "📭"}</div>
-              <div style={{ fontWeight: 700, color: "#0f172a", marginBottom: "0.25rem" }}>
-                {kycFilter === "PENDING" ? "All Clear!" : "No Records"}
+              <div style={{ fontWeight: 700, color: "#0f172a", marginBottom: "0.25rem", fontSize: "1.1rem" }}>
+                {kycFilter === "PENDING" ? "All Clear" : "No Records Found"}
               </div>
-              {kycFilter === "PENDING" ? "No pending KYC documents to review." : `No ${kycFilter.toLowerCase()} KYC documents found.`}
+              <div style={{ color: "#64748b", fontSize: "0.875rem" }}>
+                {kycFilter === "PENDING" ? "No pending KYC documents to review." : `No ${kycFilter.toLowerCase()} KYC documents found.`}
+              </div>
             </div>
           ) : (
             <div className={styles.tableContainer} style={{ overflowX: "auto" }}>
@@ -699,7 +711,7 @@ export default function AdminPage() {
             <div style={{ flex: 1, minWidth: "250px" }}>
               <input
                 type="text"
-                placeholder="🔍 Search users by name, email, role, department..."
+                placeholder="Search users by name, email, role, department..."
                 value={userSearch}
                 onChange={(e) => setUserSearch(e.target.value)}
                 style={{
@@ -794,7 +806,7 @@ export default function AdminPage() {
                                 color: "#2563eb",
                               }}
                             >
-                              ✏️ Edit
+                              Edit
                             </button>
                             {/* SUPER_ADMIN can delete anyone except themselves; ADMIN can delete students only */}
                             {(isSuperAdmin
@@ -813,7 +825,7 @@ export default function AdminPage() {
                                   color: "#dc2626",
                                 }}
                               >
-                                🗑️
+                                Delete
                               </button>
                             )}
                           </div>
@@ -835,153 +847,179 @@ export default function AdminPage() {
             {/* Add Teacher Form — SUPER_ADMIN only */}
             {isSuperAdmin && (
               <form className={styles.form} onSubmit={handleAddTeacher} style={{ width: "100%", maxWidth: "500px" }}>
-                <h3 style={{ fontWeight: 800, color: "#0f172a", fontSize: "1rem" }}>➕ Add New Teacher</h3>
+                <h3 style={{ fontWeight: 800, color: "#0f172a", fontSize: "1rem" }}>Add New Teacher</h3>
                 <div className={styles.inputGroup}>
-                  <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#475569" }}>Full Name</label>
-                  <input required value={newTeacher.name} onChange={(e) => setNewTeacher({ ...newTeacher, name: e.target.value })} />
+                  <label>Full Name</label>
+                  <input
+                    type="text"
+                    required
+                    value={newTeacher.name}
+                    onChange={(e) => setNewTeacher({ ...newTeacher, name: e.target.value })}
+                  />
                 </div>
                 <div className={styles.inputGroup}>
-                  <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#475569" }}>Email Address</label>
-                  <input type="email" required value={newTeacher.email} onChange={(e) => setNewTeacher({ ...newTeacher, email: e.target.value })} />
+                  <label>Email Address</label>
+                  <input
+                    type="email"
+                    required
+                    value={newTeacher.email}
+                    onChange={(e) => setNewTeacher({ ...newTeacher, email: e.target.value })}
+                  />
                 </div>
                 <div className={styles.inputGroup}>
-                  <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#475569" }}>Department</label>
-                  <select value={newTeacher.department} onChange={(e) => setNewTeacher({ ...newTeacher, department: e.target.value })}>
+                  <label>Department</label>
+                  <select
+                    value={newTeacher.department}
+                    onChange={(e) => setNewTeacher({ ...newTeacher, department: e.target.value })}
+                  >
                     <option value="COMPUTER">Computer Engineering</option>
                     <option value="CIVIL">Civil Engineering</option>
                     <option value="ARCHITECTURE">Architecture</option>
-                    <option value="BASIC_SCIENCE">Basic Science</option>
+                    <option value="BASIC_SCIENCE">Basic Science & Humanities</option>
                   </select>
                 </div>
-                <div className={styles.inputGroup}>
-                  <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#475569" }}>Photo URL (Optional)</label>
-                  <input value={newTeacher.image} onChange={(e) => setNewTeacher({ ...newTeacher, image: e.target.value })} placeholder="https://..." />
-                </div>
-                <button
-                  type="submit"
-                  style={{
-                    marginTop: "0.5rem",
-                    padding: "0.75rem",
-                    borderRadius: "0.75rem",
-                    border: "none",
-                    background: "#2563eb",
-                    color: "white",
-                    fontWeight: 700,
-                    cursor: "pointer",
-                  }}
-                >
-                  Create Teacher Profile
+                <button type="submit" className={styles.btnApprove} style={{ width: "100%", marginTop: "1rem" }}>
+                  Create Teacher Account
                 </button>
               </form>
             )}
           </div>
 
-          {/* Edit Modal */}
+          {/* Edit User Modal */}
           {editingUser && (
             <div
               style={{
                 position: "fixed",
                 inset: 0,
-                background: "rgba(0,0,0,0.4)",
+                background: "rgba(0,0,0,0.5)",
                 backdropFilter: "blur(4px)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                zIndex: 1000,
-                padding: "1rem",
+                zIndex: 9999,
               }}
-              onClick={() => setEditingUser(null)}
             >
               <div
-                onClick={(e) => e.stopPropagation()}
                 style={{
                   background: "white",
                   borderRadius: "1.5rem",
                   padding: "2rem",
                   width: "100%",
-                  maxWidth: "460px",
-                  boxShadow: "0 25px 50px rgba(0,0,0,0.15)",
+                  maxWidth: "480px",
+                  boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
                 }}
               >
-                <h2 style={{ fontWeight: 800, color: "#0f172a", marginBottom: "1.5rem", fontSize: "1.25rem" }}>
-                  ✏️ Edit User
-                </h2>
+                <h3 style={{ fontWeight: 900, color: "#0f172a", fontSize: "1.25rem", marginBottom: "1.5rem" }}>
+                  Edit User Account
+                </h3>
                 <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-                  <div className={styles.inputGroup}>
-                    <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#475569" }}>Full Name</label>
-                    <input value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} />
+                  <div>
+                    <label style={{ fontSize: "0.75rem", fontWeight: 700, color: "#475569" }}>Full Name</label>
+                    <input
+                      type="text"
+                      value={editForm.name}
+                      onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                      style={{
+                        width: "100%",
+                        padding: "0.625rem",
+                        borderRadius: "0.5rem",
+                        border: "1px solid #e2e8f0",
+                        marginTop: "0.25rem",
+                        fontSize: "0.875rem",
+                      }}
+                    />
                   </div>
-                  <div className={styles.inputGroup}>
-                    <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#475569" }}>Email</label>
-                    <input type="email" value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} />
+                  <div>
+                    <label style={{ fontSize: "0.75rem", fontWeight: 700, color: "#475569" }}>Email</label>
+                    <input
+                      type="email"
+                      value={editForm.email}
+                      onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+                      style={{
+                        width: "100%",
+                        padding: "0.625rem",
+                        borderRadius: "0.5rem",
+                        border: "1px solid #e2e8f0",
+                        marginTop: "0.25rem",
+                        fontSize: "0.875rem",
+                      }}
+                    />
                   </div>
-                  <div className={styles.inputGroup}>
-                    <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#475569" }}>Department</label>
-                    <select value={editForm.department} onChange={(e) => setEditForm({ ...editForm, department: e.target.value })}>
-                      <option value="">None</option>
+                  <div>
+                    <label style={{ fontSize: "0.75rem", fontWeight: 700, color: "#475569" }}>Role</label>
+                    <select
+                      value={editForm.role}
+                      onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
+                      disabled={!isSuperAdmin && editingUser.role !== "STUDENT"}
+                      style={{
+                        width: "100%",
+                        padding: "0.625rem",
+                        borderRadius: "0.5rem",
+                        border: "1px solid #e2e8f0",
+                        marginTop: "0.25rem",
+                        fontSize: "0.875rem",
+                      }}
+                    >
+                      <option value="STUDENT">STUDENT</option>
+                      <option value="TEACHER">TEACHER</option>
+                      {isSuperAdmin && <option value="ADMIN">ADMIN</option>}
+                      {isSuperAdmin && <option value="SUPER_ADMIN">SUPER_ADMIN</option>}
+                    </select>
+                  </div>
+                  <div>
+                    <label style={{ fontSize: "0.75rem", fontWeight: 700, color: "#475569" }}>Department</label>
+                    <select
+                      value={editForm.department}
+                      onChange={(e) => setEditForm({ ...editForm, department: e.target.value })}
+                      style={{
+                        width: "100%",
+                        padding: "0.625rem",
+                        borderRadius: "0.5rem",
+                        border: "1px solid #e2e8f0",
+                        marginTop: "0.25rem",
+                        fontSize: "0.875rem",
+                      }}
+                    >
+                      <option value="">None / All</option>
                       <option value="COMPUTER">Computer Engineering</option>
                       <option value="CIVIL">Civil Engineering</option>
                       <option value="ARCHITECTURE">Architecture</option>
                       <option value="BASIC_SCIENCE">Basic Science</option>
                     </select>
                   </div>
-                  <div className={styles.inputGroup}>
-                    <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#475569" }}>Role</label>
-                    <select value={editForm.role} onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}>
-                      <option value="STUDENT">Student</option>
-                      <option value="TEACHER">Teacher</option>
-                      {/* Only SUPER_ADMIN can assign admin-level roles */}
-                      {isSuperAdmin && (
-                        <>
-                          <option value="ADMIN">Admin</option>
-                          <option value="SUPER_ADMIN">Super Admin</option>
-                        </>
-                      )}
-                    </select>
+
+                  <div style={{ display: "flex", gap: "0.75rem", marginTop: "1rem" }}>
+                    <button
+                      onClick={handleSaveEdit}
+                      disabled={editSaving}
+                      style={{
+                        flex: 1,
+                        padding: "0.75rem",
+                        borderRadius: "0.75rem",
+                        background: "#2563eb",
+                        color: "white",
+                        fontWeight: 700,
+                        border: "none",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {editSaving ? "Saving..." : "Save Changes"}
+                    </button>
+                    <button
+                      onClick={() => setEditingUser(null)}
+                      style={{
+                        padding: "0.75rem 1.25rem",
+                        borderRadius: "0.75rem",
+                        border: "1px solid #e2e8f0",
+                        background: "white",
+                        fontWeight: 700,
+                        cursor: "pointer",
+                        color: "#475569",
+                      }}
+                    >
+                      Cancel
+                    </button>
                   </div>
-                  {editForm.role === "STUDENT" && (
-                    <div className={styles.inputGroup}>
-                      <label style={{ fontSize: "0.8rem", fontWeight: 700, color: "#475569" }}>Batch Year</label>
-                      <input
-                        type="number"
-                        value={editForm.batchYear}
-                        onChange={(e) => setEditForm({ ...editForm, batchYear: e.target.value })}
-                        placeholder="e.g. 2081"
-                      />
-                    </div>
-                  )}
-                </div>
-                <div style={{ display: "flex", gap: "0.75rem", marginTop: "1.5rem" }}>
-                  <button
-                    onClick={handleSaveEdit}
-                    disabled={editSaving}
-                    style={{
-                      flex: 1,
-                      padding: "0.75rem",
-                      borderRadius: "0.75rem",
-                      border: "none",
-                      background: "#2563eb",
-                      color: "white",
-                      fontWeight: 700,
-                      cursor: "pointer",
-                    }}
-                  >
-                    {editSaving ? "Saving..." : "Save Changes"}
-                  </button>
-                  <button
-                    onClick={() => setEditingUser(null)}
-                    style={{
-                      padding: "0.75rem 1.25rem",
-                      borderRadius: "0.75rem",
-                      border: "1px solid #e2e8f0",
-                      background: "white",
-                      fontWeight: 700,
-                      cursor: "pointer",
-                      color: "#475569",
-                    }}
-                  >
-                    Cancel
-                  </button>
                 </div>
               </div>
             </div>
@@ -1005,12 +1043,12 @@ export default function AdminPage() {
           >
             {isSuperAdmin ? (
               <>
-                🔬 <strong>Super Admin View:</strong> You can see both the raw student input and AIRA AI&apos;s moderated output side-by-side.
+                <strong>Super Admin View:</strong> You can see both the raw student input and AI&apos;s moderated output side-by-side.
                 Use this to evaluate and tune AI moderation quality.
               </>
             ) : (
               <>
-                🔒 Privacy Note: Reviews are 100% anonymous. You are viewing AI-moderated feedback only.
+                Privacy Note: Reviews are 100% anonymous. You are viewing AI-moderated feedback only.
                 Raw student input is restricted to Super Admin for AI tuning purposes.
               </>
             )}
@@ -1020,7 +1058,6 @@ export default function AdminPage() {
             <div style={{ padding: "3rem", textAlign: "center", color: "#94a3b8" }}>Loading reviews...</div>
           ) : reviews.length === 0 ? (
             <div className={styles.emptyState} style={{ background: "white", borderRadius: "1rem", border: "1px solid #e2e8f0" }}>
-              <div style={{ fontSize: "2.5rem", marginBottom: "0.75rem" }}>📭</div>
               No reviews have been submitted yet.
             </div>
           ) : (
@@ -1140,7 +1177,7 @@ export default function AdminPage() {
                             }}
                             title="Delete Review"
                           >
-                            {deletingReviewId === r.id ? "⏳" : "🗑️"}
+                            {deletingReviewId === r.id ? "Deleting..." : "Delete"}
                           </button>
                         </td>
                       </tr>

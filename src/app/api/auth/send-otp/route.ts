@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import nodemailer from "nodemailer";
-
 import { prisma } from "@/backend/db/prisma";
+import { emailQueue, getOtpEmailTemplate } from "@/backend/services/email";
 
 export async function POST(req: Request) {
   try {
@@ -42,37 +41,17 @@ export async function POST(req: Request) {
       });
     }
 
-    // Configure Nodemailer (User needs to add their own App Password in .env)
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER || "your-email@gmail.com",
-        pass: process.env.EMAIL_APP_PASSWORD || "your-app-password",
-      },
-    });
+    // High-priority immediate email dispatch
+    const sent = await emailQueue.sendHighPriority(
+      email,
+      "MBMAN Verification OTP Code",
+      getOtpEmailTemplate(otp)
+    );
 
-    const mailOptions = {
-      from: '"MBMAN Feedback System" <noreply@mbman.edu.np>',
-      to: email,
-      subject: "Your Login OTP Code",
-      text: `Your OTP code is: ${otp}. It will expire in 5 minutes.`,
-      html: `
-        <div style="font-family: sans-serif; padding: 20px; text-align: center;">
-          <h2>MBMAN Feedback Login</h2>
-          <p>Your one-time password is:</p>
-          <h1 style="color: #1A48D2; letter-spacing: 5px;">${otp}</h1>
-          <p>This code will expire in 5 minutes. Do not share it with anyone.</p>
-        </div>
-      `,
-    };
-
-    // If no real credentials, log to console for development testing
-    if (!process.env.EMAIL_APP_PASSWORD) {
-      console.log(`[DEV MODE] Simulated OTP sent to ${email}: ${otp}`);
-      return NextResponse.json({ message: "OTP sent (Dev Mode Console)" });
+    if (!sent) {
+      return NextResponse.json({ error: "Failed to send OTP email" }, { status: 500 });
     }
 
-    await transporter.sendMail(mailOptions);
     return NextResponse.json({ message: "OTP sent successfully" });
 
   } catch (error) {

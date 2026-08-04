@@ -44,7 +44,10 @@ export default function KycModal({ currentStatus }: { currentStatus: string }) {
   return (
     <div className={styles.overlay}>
       <div className={styles.modal}>
-        <div className={styles.trustBadge}>🔒 Safe & Secured</div>
+        <div className={styles.trustBadge}>
+          <svg className="w-3.5 h-3.5 inline-block mr-1.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+          Safe & Secured
+        </div>
         <h2>Student Verification Required</h2>
         
         {currentStatus === "PENDING" ? (

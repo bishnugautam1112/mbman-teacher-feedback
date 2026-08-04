@@ -47,7 +47,7 @@ export default async function TeachersPage() {
         <h1 className="text-3xl font-black text-slate-900 tracking-tight">Faculty Reviews</h1>
         <p className="text-slate-500 font-medium mt-1 max-w-2xl">
           Select a teacher to submit your 100% anonymous feedback. Remember that constructive 
-          criticism helps improve the academic environment. Severe toxicity will be rejected by AIRA AI.
+          criticism helps improve the academic environment. Severe toxicity will be rejected by AI.
         </p>
       </div>
 

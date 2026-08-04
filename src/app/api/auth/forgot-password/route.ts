@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/backend/db/prisma";
-import nodemailer from "nodemailer";
+import { emailQueue, getOtpEmailTemplate } from "@/backend/services/email";
 import { rateLimit } from "@/backend/services/rate-limit";
 
 export async function POST(req: Request) {
@@ -44,25 +44,12 @@ export async function POST(req: Request) {
       }
     });
 
-    // Send email
-    if (process.env.EMAIL_USER && process.env.EMAIL_APP_PASSWORD) {
-      const transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_APP_PASSWORD,
-        },
-      });
-
-      await transporter.sendMail({
-        from: `"MBMAN Feedback" <${process.env.EMAIL_USER}>`,
-        to: email,
-        subject: "Password Reset OTP",
-        html: `<p>Your password reset OTP is: <strong>${otp}</strong></p><p>This code will expire in 10 minutes.</p>`,
-      });
-    } else {
-      console.log(`[DEV MODE] Password Reset OTP for ${email}: ${otp}`);
-    }
+    // Send High-Priority Password Reset Email
+    await emailQueue.sendHighPriority(
+      email,
+      "MBMAN Password Reset Code",
+      getOtpEmailTemplate(otp)
+    );
 
     return NextResponse.json({ message: "An OTP has been sent to your email." });
   } catch (error) {

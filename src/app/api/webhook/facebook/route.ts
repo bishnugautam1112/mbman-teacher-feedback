@@ -78,7 +78,7 @@ async function sendWelcomeMessage(psid: string) {
     body: JSON.stringify({
       recipient: { id: psid },
       message: { 
-        text: "✅ Success! Your AIRA AI Teacher Feedback account is now linked. You will receive your daily feedback summaries right here." 
+        text: "✅ Success! Your AI Teacher Feedback account is now linked. You will receive your daily feedback summaries right here." 
       }
     })
   });

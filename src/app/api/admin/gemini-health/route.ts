@@ -4,7 +4,7 @@ import { requireSuperAdmin } from "@/backend/services/permissions";
 
 /**
  * GET /api/admin/gemini-health
- * Pings the AIRA AI backend to verify liveness.
+ * Pings the AI backend to verify liveness.
  * Returns pool size and status.
  * SUPER_ADMIN only.
  */
@@ -30,8 +30,13 @@ export async function GET() {
       liveStatus = "DEGRADED";
     }
   } catch (error: any) {
-    liveStatus = "DOWN";
-    errorMessage = error.message || "Unknown error";
+    if (error.message && (error.message.includes("429") || error.message.includes("quota"))) {
+      liveStatus = "DEGRADED";
+      errorMessage = "Google AI Rate Limit / Free Quota Exceeded. AI is temporarily throttling key requests.";
+    } else {
+      liveStatus = "DOWN";
+      errorMessage = error.message || "Unknown error";
+    }
   }
 
   return NextResponse.json({

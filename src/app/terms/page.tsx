@@ -35,7 +35,7 @@ export default function TermsOfService() {
             <h2 className="text-xl font-bold text-slate-800 mb-4">2. User Conduct</h2>
             <p className="text-slate-600 leading-relaxed mb-2">
               The purpose of this platform is to provide constructive feedback to educators. While your identity remains completely anonymous, 
-              all submissions are processed through our AI moderation engine (AIRA).
+              all submissions are processed through our AI moderation engine (AI).
             </p>
             <ul className="list-disc pl-6 mt-2 text-slate-600 space-y-1">
               <li>You agree not to use hate speech, profanity, or discriminatory language.</li>

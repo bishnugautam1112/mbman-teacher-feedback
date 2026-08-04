@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/backend/auth/auth";
 import { prisma } from "@/backend/db/prisma";
 import { calculateBatchYear } from "@/backend/services/academic";
+import { emailQueue, getKycReceivedTemplate, getAdminKycAlertTemplate } from "@/backend/services/email";
 
 export async function POST(req: Request) {
   try {
@@ -68,6 +69,31 @@ export async function POST(req: Request) {
         status: "PENDING",
       }
     });
+
+    // 1. Send confirmation email to student
+    if (user.email) {
+      emailQueue.sendNormalPriority(
+        user.email,
+        "KYC Verification Submitted - Pending Review",
+        getKycReceivedTemplate(user.name || "Student")
+      );
+    }
+
+    // 2. Alert admins about pending KYC review
+    prisma.user.findMany({
+      where: { role: { in: ["ADMIN", "SUPER_ADMIN"] } },
+      select: { email: true }
+    }).then((admins) => {
+      admins.forEach((admin) => {
+        if (admin.email) {
+          emailQueue.sendNormalPriority(
+            admin.email,
+            "New Student KYC Pending Approval",
+            getAdminKycAlertTemplate(user.name || "Student", user.email || "")
+          );
+        }
+      });
+    }).catch((err) => console.warn("[KYC Route] Failed to fetch admins for alert:", err));
 
     return NextResponse.json({ success: true, message: "KYC Submitted" });
   } catch (error) {

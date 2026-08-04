@@ -88,15 +88,15 @@ export default function Footer() {
             </h4>
             <ul className="flex flex-col gap-5 text-sm font-medium text-slate-400">
               <li className="flex items-start gap-3">
-                <span className="text-indigo-400 mt-0.5">📍</span>
+                <svg className="w-5 h-5 text-indigo-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                 Urlabari-3, Morang, Koshi Province, Nepal
               </li>
               <li className="flex items-start gap-3">
-                <span className="text-indigo-400 mt-0.5">📞</span>
+                <svg className="w-5 h-5 text-indigo-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
                 +977 21-410023
               </li>
               <li className="flex items-start gap-3">
-                <span className="text-indigo-400 mt-0.5">✉️</span>
+                <svg className="w-5 h-5 text-indigo-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
                 mbmanteacherfeedbacksystem@gmail.com
               </li>
             </ul>
@@ -106,7 +106,8 @@ export default function Footer() {
           <div className="lg:col-span-1 bg-slate-800/30 p-6 rounded-2xl border border-white/5 relative group overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-b from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
             <h4 className="text-white font-bold mb-2 flex items-center gap-2">
-              <span className="animate-pulse">❤️</span> The Creators
+              <svg className="w-4 h-4 text-rose-500 animate-pulse fill-current" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+              The Engineering Team
             </h4>
             <p className="text-xs text-slate-400 mb-6 font-medium">Proudly engineered by the 2023 BE Comp Batch</p>
             

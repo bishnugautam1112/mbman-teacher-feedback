@@ -60,7 +60,7 @@ export default function PrivacyPolicy() {
             <h2 className="text-xl font-bold text-slate-800 mb-4">4. Sharing of Information</h2>
             <p className="text-slate-600 leading-relaxed">
               We do not sell, trade, or rent your personal identification information to others. 
-              All feedback presented to teachers is heavily moderated by our AI engine (AIRA) to remove hate speech 
+              All feedback presented to teachers is heavily moderated by our AI engine (AI) to remove hate speech 
               and is summarized anonymously.
             </p>
           </section>

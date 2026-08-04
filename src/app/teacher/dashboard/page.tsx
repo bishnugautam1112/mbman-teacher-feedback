@@ -29,6 +29,8 @@ export default function TeacherDashboard() {
   const [rank, setRank] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [fbSubscribed, setFbSubscribed] = useState(false);
+  const [dailySummaryEnabled, setDailySummaryEnabled] = useState(true);
+  const [isToggling, setIsToggling] = useState(false);
   const [activeFilter, setActiveFilter] = useState<"all" | "recent" | "best" | "critical">("all");
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState("");
@@ -73,11 +75,33 @@ export default function TeacherDashboard() {
         if (settingsData.teacher?.facebookPsid) {
           setFbSubscribed(true);
         }
+        if (settingsData.teacher?.receiveDailySummary !== undefined) {
+          setDailySummaryEnabled(settingsData.teacher.receiveDailySummary);
+        }
       }
     } catch (err) {
       console.error("Failed to fetch dashboard data:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleToggleDailySummary = async () => {
+    setIsToggling(true);
+    const newValue = !dailySummaryEnabled;
+    try {
+      const res = await fetch("/api/teacher/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ receiveDailySummary: newValue })
+      });
+      if (res.ok) {
+        setDailySummaryEnabled(newValue);
+      }
+    } catch (error) {
+      console.error("Failed to toggle setting", error);
+    } finally {
+      setIsToggling(false);
     }
   };
 
@@ -156,7 +180,8 @@ export default function TeacherDashboard() {
         
         <div className="flex-1 py-6 px-4 flex flex-col gap-2">
           <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-blue-600/20 text-blue-400 font-bold border border-blue-500/20">
-            📊 Overview
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+            Overview
           </div>
         </div>
 
@@ -215,7 +240,9 @@ export default function TeacherDashboard() {
                 transition={{ delay: 0 }}
                 className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col relative overflow-hidden group"
               >
-                <div className="absolute -right-4 -top-4 text-7xl opacity-5 group-hover:scale-110 transition-transform">⭐</div>
+                <div className="absolute -right-4 -top-4 text-slate-200/50 group-hover:scale-110 transition-transform">
+                  <svg className="w-24 h-24" fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+                </div>
                 <span className="text-slate-500 font-bold text-sm mb-2">Average Rating</span>
                 <div className="text-4xl font-black text-slate-900">
                   {stats.averageRating}
@@ -234,7 +261,9 @@ export default function TeacherDashboard() {
                 transition={{ delay: 0.1 }}
                 className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex flex-col relative overflow-hidden group"
               >
-                <div className="absolute -right-4 -top-4 text-7xl opacity-5 group-hover:scale-110 transition-transform">📝</div>
+                <div className="absolute -right-4 -top-4 text-slate-200/50 group-hover:scale-110 transition-transform">
+                  <svg className="w-24 h-24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                </div>
                 <span className="text-slate-500 font-bold text-sm mb-2">Total Reviews</span>
                 <div className="text-4xl font-black text-slate-900">{stats.totalReviews}</div>
                 <span className="text-sm font-semibold text-slate-400 mt-2">
@@ -252,7 +281,9 @@ export default function TeacherDashboard() {
                 transition={{ delay: 0.2 }}
                 className="bg-gradient-to-br from-blue-600 to-indigo-700 p-6 rounded-3xl shadow-md flex flex-col relative overflow-hidden text-white group"
               >
-                <div className="absolute -right-4 -top-4 text-7xl opacity-10 group-hover:scale-110 transition-transform">🏆</div>
+                <div className="absolute -right-4 -top-4 text-white/10 group-hover:scale-110 transition-transform">
+                  <svg className="w-24 h-24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" /></svg>
+                </div>
                 <span className="text-blue-100 font-bold text-sm mb-2">Current Rank</span>
                 <div className="text-4xl font-black">
                   {rank ? `#${rank}` : "—"}
@@ -266,30 +297,46 @@ export default function TeacherDashboard() {
           {!loading && (
             <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm mb-10 flex flex-col md:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center text-2xl flex-shrink-0">
-                  💬
+                <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center flex-shrink-0">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-slate-900">AIRA AI Daily Summaries</h3>
+                  <h3 className="text-lg font-bold text-slate-900">AI Daily Summaries</h3>
                   <p className="text-sm text-slate-500 font-medium">Get your moderated feedback summaries delivered straight to your Facebook Messenger every day.</p>
                 </div>
               </div>
               
-              {fbSubscribed ? (
-                <div className="px-5 py-2.5 bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold text-sm rounded-xl flex items-center gap-2 whitespace-nowrap">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                  Subscribed
-                </div>
-              ) : (
-                <a 
-                  href={`https://m.me/${process.env.NEXT_PUBLIC_FB_PAGE_ID || "100000000000000"}?ref=${user?.id}`}
-                  target="_blank"
-                  rel="noopener noreferrer" 
-                  className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl shadow-[0_4px_14px_0_rgba(37,99,235,0.39)] transition-all hover:-translate-y-0.5 whitespace-nowrap"
-                >
-                  Subscribe on Messenger
-                </a>
-              )}
+              <div className="flex items-center gap-3">
+                {fbSubscribed ? (
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-sm font-bold ${dailySummaryEnabled ? 'text-slate-700' : 'text-slate-400'}`}>
+                        {dailySummaryEnabled ? 'Enabled' : 'Disabled'}
+                      </span>
+                      <button 
+                        onClick={handleToggleDailySummary}
+                        disabled={isToggling}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors disabled:opacity-50 ${dailySummaryEnabled ? 'bg-blue-600' : 'bg-slate-300'}`}
+                      >
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${dailySummaryEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+                      </button>
+                    </div>
+                    <div className="px-4 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold text-sm rounded-xl flex items-center gap-1.5 whitespace-nowrap">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                      Linked
+                    </div>
+                  </div>
+                ) : (
+                  <a 
+                    href={`https://m.me/${process.env.NEXT_PUBLIC_FB_PAGE_ID || "100000000000000"}?ref=${user?.id}`}
+                    target="_blank"
+                    rel="noopener noreferrer" 
+                    className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl shadow-[0_4px_14px_0_rgba(37,99,235,0.39)] transition-all hover:-translate-y-0.5 whitespace-nowrap"
+                  >
+                    Subscribe on Messenger
+                  </a>
+                )}
+              </div>
             </div>
           )}
 
@@ -331,12 +378,12 @@ export default function TeacherDashboard() {
             </div>
           ) : filteredReviews.length === 0 ? (
             <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-              <div className="text-4xl mb-3">
-                {activeFilter === "critical" ? "🎉" : "📭"}
+              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto text-slate-400 mb-3">
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" /></svg>
               </div>
               <h3 className="font-bold text-lg text-slate-800 mb-1">
                 {activeFilter === "critical"
-                  ? "No Critical Feedback!"
+                  ? "No Critical Feedback"
                   : activeFilter === "recent"
                   ? "No Recent Reviews"
                   : "No Reviews Yet"}
@@ -376,7 +423,7 @@ export default function TeacherDashboard() {
                     </div>
                   </div>
                   <p className="text-slate-700 font-medium leading-relaxed italic border-l-4 border-blue-500 pl-4 py-1 mb-4 bg-blue-50/30 rounded-r-lg">
-                    &ldquo;{fb.moderatedText || "Feedback submitted (pending AIRA AI moderation)"}&rdquo;
+                    &ldquo;{fb.moderatedText || "Feedback submitted (pending AI moderation)"}&rdquo;
                   </p>
                   
                   {fb.teacherReply ? (
@@ -448,7 +495,7 @@ export default function TeacherDashboard() {
                   <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[10px] font-bold text-slate-400">
                     <span className="flex items-center gap-1.5 text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md border border-emerald-100/50">
                       <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
-                      AIRA AI Sanitized
+                      AI Sanitized
                     </span>
                     <span>ID: {fb.id.slice(-6).toUpperCase()}</span>
                   </div>

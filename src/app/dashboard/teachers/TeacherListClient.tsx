@@ -78,11 +78,11 @@ export default function TeacherListClient({ teachers }: { teachers: Teacher[] })
             onClick={() => setSelectedTeacher(t)}
             className={`p-5 rounded-2xl border-2 transition-all cursor-pointer flex flex-col ${selectedTeacher?.id === t.id ? 'border-blue-600 bg-blue-50 shadow-md scale-[1.02]' : 'border-slate-200 bg-white hover:border-blue-300 hover:shadow-sm'}`}
           >
-            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center text-2xl mb-3 overflow-hidden shadow-sm">
+            <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 mb-3 overflow-hidden shadow-sm border border-slate-200">
               {t.image ? (
                 <img src={t.image} alt={t.name || "Teacher"} className="w-full h-full object-cover" />
               ) : (
-                "👨‍🏫"
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
               )}
             </div>
             <h3 className="font-bold text-slate-800 text-lg truncate">{t.name || "Unknown"}</h3>
@@ -118,7 +118,9 @@ export default function TeacherListClient({ teachers }: { teachers: Teacher[] })
 
               {success ? (
                 <div className="bg-emerald-50 text-emerald-700 p-6 rounded-2xl text-center border border-emerald-200">
-                  <div className="text-4xl mb-3">✅</div>
+                  <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-3 text-emerald-600">
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                  </div>
                   <h3 className="font-bold text-lg mb-1">Feedback Submitted!</h3>
                   <p className="text-sm font-medium">{success}</p>
                 </div>

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/backend/db/prisma";
 import bcrypt from "bcryptjs";
+import { emailQueue, getWelcomeKycTemplate } from "@/backend/services/email";
 
 export async function POST(req: Request) {
   try {
@@ -48,6 +49,13 @@ export async function POST(req: Request) {
         role: "STUDENT",
       }
     });
+
+    // Send Normal Priority Welcome & KYC fulfillment email in background
+    emailQueue.sendNormalPriority(
+      email,
+      "Welcome to MBMAN Teacher Feedback Portal",
+      getWelcomeKycTemplate(name)
+    );
 
     return NextResponse.json({ message: "Registration successful" });
   } catch (error) {
