@@ -106,9 +106,9 @@ export default function Home() {
           </motion.div>
 
           <motion.h1 initial="hidden" animate="visible" variants={itemVariants} transition={{ delay: 0.1 }} className={`text-4xl sm:text-5xl md:text-7xl font-extrabold tracking-tight leading-[1.1] mb-6 transition-colors duration-500 ${isDark ? 'text-white drop-shadow-xl' : 'text-slate-900'}`}>
-            Empower Your Teachers.
+            Empower Your Teachers.<br className="hidden md:block" />
             <span className={`block mt-2 md:mt-0 md:inline bg-gradient-to-r bg-clip-text text-transparent transition-colors duration-500 ${isDark ? 'from-blue-400 to-indigo-400 drop-shadow-md' : 'from-blue-800 to-indigo-900 drop-shadow-sm'}`}>
-              {' '}Shape the Future.
+              Shape the Future.
             </span>
           </motion.h1>
           
