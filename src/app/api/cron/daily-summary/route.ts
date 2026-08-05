@@ -6,9 +6,10 @@ import { emailQueue, getTeacherSummaryTemplate } from "@/backend/services/email"
 // This route should be pinged by Vercel Cron at 9 PM daily
 export async function GET(req: Request) {
   try {
-    // 1. Verify Vercel Cron Secret for security (bypass in development for testing)
+    // 1. Verify Vercel Cron Secret for security if CRON_SECRET is set
+    const cronSecret = process.env.CRON_SECRET;
     const authHeader = req.headers.get("authorization");
-    if (process.env.NODE_ENV !== "development" && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
