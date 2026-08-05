@@ -69,9 +69,12 @@ export const geminiManager = new GeminiKeyManager();
 export async function callGoogleAIWithRetry(prompt: string, initialModel: string = "gemini-2.0-flash"): Promise<string> {
   let lastError: any;
   
-  // High-performance, low-latency models for instant response times
+  // Prioritized Gemini Flash Lite models for high quota and speed
   const fallbackModels = [
     initialModel,
+    "gemini-3.5-flash-lite",
+    "gemini-2.5-flash-lite",
+    "gemini-3.1-flash-lite",
     "gemini-2.0-flash",
     "gemini-1.5-flash",
     "gemini-1.5-flash-8b"
