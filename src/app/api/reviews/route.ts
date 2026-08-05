@@ -72,8 +72,8 @@ export async function POST(req: Request) {
       );
     }
 
-    // Run AI moderation on the raw feedback via AI
-    const { thirdPersonSummary, firstPersonSanitized } = await moderateReview(rawContent);
+    // Run AI moderation & abuse detection on the raw feedback
+    const { thirdPersonSummary, firstPersonSanitized, isAbusiveOrAnomalous } = await moderateReview(rawContent);
 
     // Fetch the student's batch year (stored during KYC, never linked to the review)
     const studentRecord = await prisma.user.findUnique({
@@ -81,8 +81,8 @@ export async function POST(req: Request) {
       select: { batchYear: true },
     });
 
-    // Flag as anomalous if the rating is highly critical (<= 2)
-    const isAnomalous = rating <= 2;
+    // Flag as anomalous if the rating is highly critical (<= 2) OR if abusive/hostile language was detected
+    const isAnomalous = rating <= 2 || isAbusiveOrAnomalous === true;
 
     // Create the anonymous review — NO studentId is ever saved
     const review = await prisma.review.create({

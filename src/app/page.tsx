@@ -123,14 +123,14 @@ export default function Home() {
               <div className={`w-full sm:w-64 h-16 rounded-2xl animate-pulse ${isDark ? 'bg-white/10' : 'bg-slate-200'}`}></div>
             ) : status === "authenticated" ? (
               <Link href={(session?.user as any)?.role === "TEACHER" ? "/teacher/dashboard" : "/dashboard"} className="w-full sm:w-auto">
-                <button className={`w-full sm:w-auto group relative text-white px-8 py-4 rounded-2xl text-lg font-bold transition-all duration-300 hover:-translate-y-1 overflow-hidden shadow-md ${isDark ? 'bg-blue-600 hover:bg-blue-500' : 'bg-blue-600 hover:bg-blue-700 shadow-[0_4px_14px_0_rgba(37,99,235,0.39)]'}`}>
+                <button className={`w-full sm:w-auto group relative text-white px-8 py-4 rounded-2xl text-lg font-bold transition-all duration-300 hover:-translate-y-1 overflow-hidden shadow-md ${isDark ? 'bg-purple-600 hover:bg-purple-500' : 'bg--600 hover:bg-purple-700 shadow-[0_4px_14px_0_rgba(37,99,235,0.39)]'}`}>
                   <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[100%] group-hover:animate-[shimmer_1.5s_infinite]"></div>
                   Go to Dashboard
                 </button>
               </Link>
             ) : (
               <Link href="/auth/signin" className="w-full sm:w-auto">
-                <button className={`w-full sm:w-auto group relative text-white px-8 py-4 rounded-2xl text-lg font-bold transition-all duration-300 hover:-translate-y-1 overflow-hidden shadow-md ${isDark ? 'bg-blue-600 hover:bg-blue-500' : 'bg-blue-600 hover:bg-blue-700 shadow-[0_4px_14px_0_rgba(37,99,235,0.39)]'}`}>
+                <button className={`w-full sm:w-auto group relative text-black px-8 py-4 rounded-2xl text-lg font-bold transition-all duration-300 hover:-translate-y-1 overflow-hidden shadow-md ${isDark ? 'bg-purple-600 hover:bg-purple-500' : 'bg-purple-600 hover:bg-purple-700 shadow-[0_4px_14px_0_rgba(37,99,235,0.39)]'}`}>
                   <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-[100%] group-hover:animate-[shimmer_1.5s_infinite]"></div>
                   Give Feedback Now
                 </button>

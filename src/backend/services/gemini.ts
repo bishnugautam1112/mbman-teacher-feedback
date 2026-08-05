@@ -149,51 +149,71 @@ export async function callGoogleAIWithRetry(prompt: string, initialModel: string
 }
 
 /**
- * AI Moderation Function (2-way Sanitization)
+ * Fallback sanitizer in case AI fails or returns raw text
  */
-export async function moderateReview(rawText: string): Promise<{ thirdPersonSummary: string, firstPersonSanitized: string }> {
+function fallbackSanitize(text: string): { text: string; isToxic: boolean } {
+  const toxicPattern = /\b(go to hell|hell|fuck|fucking|bitch|shit|bullshit|die|muji|radi|torpe|kutta|randi|mc|bc|idiot|stupid)\b/gi;
+  const isToxic = toxicPattern.test(text);
+  const cleaned = text.replace(toxicPattern, "please improve teaching methods");
+  return { text: cleaned, isToxic };
+}
+
+/**
+ * AI Moderation Function (2-way Sanitization + Strict Abuse Detection)
+ */
+export async function moderateReview(rawText: string): Promise<{ thirdPersonSummary: string, firstPersonSanitized: string, isAbusiveOrAnomalous: boolean }> {
   const prompt = `
-    You are AI, an intelligent, natural AI feedback moderator for a college teacher feedback system in Nepal (MBMAN).
-    A student has submitted the following feedback anonymously:
+    You are AI, a strict, intelligent, and natural AI feedback moderator for a college teacher feedback system in Nepal (MBMAN).
+    A student has submitted the following raw feedback anonymously:
     "${rawText}"
 
-    CRITICAL RULES FOR MODERATION:
-    1. LANGUAGE & SCRIPT PRESERVATION:
-       - Maintain the EXACT same language and script/romanization style as the input!
-       - If the student wrote in Romanized Nepali (e.g. "thank you sir model question paper dinu vako maa"), output MUST be in Romanized Nepali!
-       - If written in Nepali script (Devanagari), output MUST be in Nepali script.
-       - If written in English, output MUST be in English.
-       - NEVER force-translate Romanized Nepali into formal corporate English!
+    STRICT RULES FOR MODERATION:
+    1. ZERO TOLERANCE FOR PROFANITY, HOSTILITY, INSULTS, & RUDE COMMANDS:
+       - Regard ANY phrase containing hostility, rudeness, slang, curse words, or insulting commands (such as "go to hell", "die", "fuck", "bitch", "useless", "muji", "torpe", "radi", "kutta", "randi", etc.) as PROFANITY / HOSTILITY.
+       - NEVER allow hostile phrases like "go to hell" or insults to pass through into the output text, REGARDLESS of how positive or high the rating or tone might seem!
+       - Transform toxic rants, bad words, or hostile commands into polite, constructive, natural feedback in the SAME language/script.
+       - Example: "go to hell sir" -> "Please improve teaching guidance and support sir."
+       - Example: "muji padhauna aaudaina" -> "Kripaya teaching method ra explanation ma aaru dhaayan dinus."
 
-    2. SENSITIVITY & MAGICAL EDITING:
-       - If the review is GOOD, POSITIVE, or NORMAL CONSTRUCTIVE FEEDBACK, keep the student's authentic review and expression intact! Do NOT rewrite it into dry corporate summaries.
-       - If the feedback contains PROFANITY, VULGARITY, SLANG, or TOXIC ATTACKS:
-         - Magically filter out or edit ONLY the bad/vulgar/abusive words.
-         - Transform toxic rants into polite, constructive, natural feedback in the SAME language/romanization.
-         - Make sure the output reads naturally, authentically, and believably as a real student feedback on the dashboard.
+    2. LANGUAGE & SCRIPT PRESERVATION:
+       - Maintain the EXACT same language and script/romanization style as the input!
+       - If written in Romanized Nepali (e.g. "go to hell, dinu vako chaina"), output MUST be in Romanized Nepali!
+       - If written in Nepali script (Devanagari), output MUST be in Devanagari script.
+       - If written in English, output MUST be in English.
+
+    3. ANOMALY & ABUSE DETECTION:
+       - Set "isAbusiveOrAnomalous" to true if the raw input contained ANY insult, slang, curse word, hostile phrase ("go to hell"), or severe negativity.
 
     You MUST return ONLY a valid JSON object with the following schema:
     {
-      "thirdPersonSummary": "The natural, moderated student review in the original language/romanization.",
-      "firstPersonSanitized": "A 1st-person version in the original language/romanization with all bad words magically cleaned."
+      "thirdPersonSummary": "The natural, strictly moderated student review in the original language/romanization without any insults or bad words.",
+      "firstPersonSanitized": "A polite 1st-person version in the original language/romanization with all bad words and hostile phrases replaced by polite feedback.",
+      "isAbusiveOrAnomalous": true
     }
   `;
 
   try {
     const response = await callGoogleAIWithRetry(prompt, "gemini-2.0-flash");
-    // Clean up potential markdown blocks from AI
     const jsonStr = response.replace(/^```json/m, "").replace(/```$/m, "").trim();
     const result = JSON.parse(jsonStr);
+    
+    // Check fallback filter on outputs just to be 100% bulletproof
+    const fbThird = fallbackSanitize(result.thirdPersonSummary || rawText);
+    const fbFirst = fallbackSanitize(result.firstPersonSanitized || rawText);
+    const fbRaw = fallbackSanitize(rawText);
+
     return {
-      thirdPersonSummary: result.thirdPersonSummary || rawText,
-      firstPersonSanitized: result.firstPersonSanitized || rawText
+      thirdPersonSummary: fbThird.text,
+      firstPersonSanitized: fbFirst.text,
+      isAbusiveOrAnomalous: result.isAbusiveOrAnomalous === true || fbRaw.isToxic || fbThird.isToxic || fbFirst.isToxic
     };
   } catch (error) {
     console.error("Moderation AI Failed completely:", error);
-    // Silent fallback to rawText so student feedback always looks authentic on dashboard
+    const fb = fallbackSanitize(rawText);
     return {
-      thirdPersonSummary: rawText,
-      firstPersonSanitized: rawText
+      thirdPersonSummary: fb.text,
+      firstPersonSanitized: fb.text,
+      isAbusiveOrAnomalous: fb.isToxic
     };
   }
 }

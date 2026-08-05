@@ -58,6 +58,11 @@ export async function GET(req: Request) {
       Based on these reviews, generate 4 key teaching parameters (e.g., Clarity, Engagement, Helpfulness, Punctuality).
       For each parameter, provide a score out of 5.0 (can use decimals like 4.2) and a short 1-sentence explanation of why.
       
+      CRITICAL EVALUATION RULES:
+      - If any student review contains hostile commands, profanity, abusive slang, or insults (such as "go to hell", "die", "fuck", "muji", "torpe", etc.) EVEN IF the student gave a 5/5 star rating:
+        1. DO NOT give perfect 5.0 scores. Penalize the parameter scores to reflect hostile student sentiment.
+        2. Explicitly mention the detected hostile comments or inconsistency in the explanation.
+      
       Reviews:
       ${reviewsText}
       
