@@ -69,25 +69,15 @@ export const geminiManager = new GeminiKeyManager();
 export async function callGoogleAIWithRetry(prompt: string, initialModel: string = "gemini-2.0-flash"): Promise<string> {
   let lastError: any;
   
-  // High-performance fallback list ordered by quota, speed & model stability
+  // High-performance, low-latency models for instant response times
   const fallbackModels = [
     initialModel,
-    "gemini-3.6-flash",
-    "gemini-3.5-flash-lite",
-    "gemini-3.5-flash",
-    "gemini-3.1-pro",
-    "gemini-3.1-flash-lite",
-    "gemini-2.5-pro",
-    "gemini-2.5-flash",
-    "gemini-2.5-flash-lite",
     "gemini-2.0-flash",
-    "gemini-2.0-flash-lite",
     "gemini-1.5-flash",
-    "gemini-1.5-flash-8b",
-    "gemini-1.5-pro"
+    "gemini-1.5-flash-8b"
   ];
 
-  // Remove duplicates just in case initialModel is already in the list
+  // Remove duplicates
   const uniqueModels = Array.from(new Set(fallbackModels));
 
   for (const modelName of uniqueModels) {
@@ -111,7 +101,8 @@ export async function callGoogleAIWithRetry(prompt: string, initialModel: string
         const res = await fetch(url, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
+          body: JSON.stringify(payload),
+          signal: AbortSignal.timeout(3500)
         });
 
         if (!res.ok) {
