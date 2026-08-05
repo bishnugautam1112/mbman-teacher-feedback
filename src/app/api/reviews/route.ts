@@ -4,6 +4,7 @@ import { authOptions } from "@/backend/auth/auth";
 import { prisma } from "@/backend/db/prisma";
 import { generateDailyHash } from "@/backend/services/anonymity";
 import { moderateReview } from "@/backend/services/gemini";
+import { generateTeacherParameters } from "@/app/api/teacher/parameters/route";
 
 /**
  * POST /api/reviews
@@ -98,11 +99,8 @@ export async function POST(req: Request) {
       },
     });
 
-    // Reset cached AI parameters so newly submitted feedback is included in future AI analysis
-    await prisma.user.update({
-      where: { id: teacherId },
-      data: { aiParameters: null }
-    });
+    // Regenerate and cache AI teaching parameters so the teacher details page loads INSTANTLY (0ms delay)
+    await generateTeacherParameters(teacherId);
 
     return NextResponse.json({
       message: "Your anonymous feedback has been submitted and AI-sanitized. Thank you!",

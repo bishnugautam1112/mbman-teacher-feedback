@@ -4,6 +4,77 @@ import { authOptions } from "@/backend/auth/auth";
 import { prisma } from "@/backend/db/prisma";
 import { callGoogleAIWithRetry } from "@/backend/services/gemini";
 
+/**
+ * Core function to analyze teacher reviews with Gemini AI and cache 4 parameters in PostgreSQL.
+ * Can be called synchronously or asynchronously in the background.
+ */
+export async function generateTeacherParameters(teacherId: string) {
+  const teacher = await prisma.user.findUnique({
+    where: { id: teacherId },
+    select: { id: true, name: true }
+  });
+
+  if (!teacher) return null;
+
+  const reviews = await prisma.review.findMany({
+    where: { teacherId },
+    select: { rawContent: true, rating: true, moderatedText: true },
+    take: 20,
+    orderBy: { createdAt: 'desc' }
+  });
+
+  if (reviews.length === 0) {
+    await prisma.user.update({
+      where: { id: teacherId },
+      data: { aiParameters: null }
+    });
+    return null;
+  }
+
+  const reviewsText = reviews.map(r => `Rating: ${r.rating}/5. Raw Comment: "${r.rawContent}". Moderated Feedback: "${r.moderatedText || r.rawContent}"`).join("\n");
+
+  const prompt = `
+    You are an expert academic evaluator for a college feedback portal. Analyze student feedback for faculty member "${teacher.name || "the teacher"}".
+    Evaluate 4 core teaching parameters: "Clarity of Instruction", "Student Engagement", "Helpfulness & Support", and "Punctuality & Discipline".
+
+    STRICT EVALUATION & LANGUAGE RULES:
+    1. LANGUAGE: All "reason" explanations MUST be written in 100% formal, clear, professional English. Never leave raw slang, Nepali phrases, or unformatted text!
+    2. STRICTNESS & ACCURACY:
+       - Examine both raw and moderated comments carefully.
+       - If any student review contains criticism, requests for improvement (e.g., "please improve teaching methods"), hostile commands ("go to hell"), or abusive language—EVEN IF the student awarded 5/5 stars:
+         a) DO NOT award high/perfect scores (5.0 or 4.8). Strictly penalize the relevant parameters down to realistic scores (e.g. 3.0 to 3.8).
+         b) Explain the deduction clearly in formal English (e.g., "Students indicated a need for improved instructional clarity and supportive guidance.").
+       - If feedback is genuinely positive without any criticisms, award deserving scores (4.2 - 4.8).
+
+    Reviews Data:
+    ${reviewsText}
+
+    Return ONLY a valid JSON array of 4 objects without markdown blocks:
+    [
+      {"name": "Clarity of Instruction", "score": 3.6, "reason": "Feedback indicates students require clearer explanations and improved teaching methodologies."},
+      {"name": "Student Engagement", "score": 4.0, "reason": "Classroom interaction is maintained well overall."},
+      {"name": "Helpfulness & Support", "score": 3.5, "reason": "Students expressed a desire for additional academic guidance and responsiveness."},
+      {"name": "Punctuality & Discipline", "score": 4.2, "reason": "Demonstrates consistent class scheduling and time management."}
+    ]
+  `;
+
+  try {
+    const aiResponse = await callGoogleAIWithRetry(prompt, "gemini-2.0-flash");
+    const cleanJsonStr = aiResponse.replace(/```json/gi, '').replace(/```/g, '').trim();
+    const parameters = JSON.parse(cleanJsonStr);
+
+    await prisma.user.update({
+      where: { id: teacherId },
+      data: { aiParameters: parameters }
+    });
+
+    return parameters;
+  } catch (e) {
+    console.error("Failed to generate AI parameters:", e);
+    return null;
+  }
+}
+
 export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -18,85 +89,26 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "teacherId is required" }, { status: 400 });
     }
 
-    // Fetch teacher and check if parameters already exist
     const teacher = await prisma.user.findUnique({
       where: { id: teacherId },
-      select: { aiParameters: true, name: true }
+      select: { aiParameters: true }
     });
 
     if (!teacher) {
       return NextResponse.json({ error: "Teacher not found" }, { status: 404 });
     }
 
-    // Check remaining reviews first
-    const reviews = await prisma.review.findMany({
-      where: { teacherId },
-      select: { rawContent: true, rating: true },
-      take: 20, // analyze up to 20 recent reviews
-      orderBy: { createdAt: 'desc' }
-    });
-
-    if (reviews.length === 0) {
-      if (teacher.aiParameters !== null) {
-        await prisma.user.update({
-          where: { id: teacherId },
-          data: { aiParameters: null }
-        });
-      }
-      return NextResponse.json({ parameters: null });
-    }
-
-    // If already generated and reviews exist, return them
+    // If parameters are already cached in database, return IMMEDIATELY (0ms delay)
     if (teacher.aiParameters) {
       return NextResponse.json({ parameters: teacher.aiParameters });
     }
 
-    const reviewsText = reviews.map(r => `Rating: ${r.rating}/5. Comment: "${r.rawContent}"`).join("\n");
-
-    const prompt = `
-      You are an AI teaching assistant evaluator. Analyze the following student reviews for a teacher named ${teacher.name || "the teacher"}.
-      Based on these reviews, generate 4 key teaching parameters (e.g., Clarity, Engagement, Helpfulness, Punctuality).
-      For each parameter, provide a score out of 5.0 (can use decimals like 4.2) and a short 1-sentence explanation of why.
-      
-      CRITICAL EVALUATION RULES:
-      - If any student review contains hostile commands, profanity, abusive slang, or insults (such as "go to hell", "die", "fuck", "muji", "torpe", etc.) EVEN IF the student gave a 5/5 star rating:
-        1. DO NOT give perfect 5.0 scores. Penalize the parameter scores to reflect hostile student sentiment.
-        2. Explicitly mention the detected hostile comments or inconsistency in the explanation.
-      
-      Reviews:
-      ${reviewsText}
-      
-      You MUST return your response as a raw JSON array of objects. Do NOT include markdown blocks like \`\`\`json.
-      Example format:
-      [
-        {"name": "Clarity", "score": 4.5, "reason": "Most students praised the clear explanations."},
-        {"name": "Punctuality", "score": 3.8, "reason": "A few students mentioned occasional late arrivals."}
-      ]
-    `;
-
-    const aiResponse = await callGoogleAIWithRetry(prompt, "gemini-2.0-flash");
-    
-    // Clean up potential markdown formatting from AI response
-    const cleanJsonStr = aiResponse.replace(/```json/gi, '').replace(/```/g, '').trim();
-    
-    let parameters;
-    try {
-      parameters = JSON.parse(cleanJsonStr);
-    } catch (e) {
-      console.error("Failed to parse AI parameters JSON:", cleanJsonStr);
-      return NextResponse.json({ error: "AI failed to generate valid metrics" }, { status: 500 });
-    }
-
-    // Save to database
-    await prisma.user.update({
-      where: { id: teacherId },
-      data: { aiParameters: parameters }
-    });
-
+    // Otherwise, generate and cache now
+    const parameters = await generateTeacherParameters(teacherId);
     return NextResponse.json({ parameters });
 
   } catch (error) {
-    console.error("Parameters Generation Error:", error);
-    return NextResponse.json({ error: "Failed to generate parameters" }, { status: 500 });
+    console.error("Parameters GET Route Error:", error);
+    return NextResponse.json({ error: "Failed to fetch parameters" }, { status: 500 });
   }
 }
