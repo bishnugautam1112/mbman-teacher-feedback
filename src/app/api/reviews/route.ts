@@ -29,7 +29,7 @@ export async function POST(req: Request) {
     }
 
     if (user.kycStatus !== "APPROVED") {
-      return NextResponse.json({ error: "Your KYC must be approved before submitting reviews." }, { status: 403 });
+      return NextResponse.json({ error: "Your Student Verification must be approved before submitting reviews." }, { status: 403 });
     }
 
     const { teacherId, rating, rawContent } = await req.json();

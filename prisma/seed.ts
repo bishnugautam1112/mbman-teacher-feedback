@@ -10,10 +10,7 @@ const teachers = [
   { name: "Manish Yadav", initials: "MY" },
   { name: "Drona Sigdel", initials: "DS" },
   { name: "Pankaj Shah", initials: "PS" },
-  { name: "Vision Bhandari", initials: "VB" },
-  { name: "Bishwash Poudel", initials: "BP" },
-  { name: "Reverse Dahal", initials: "RD" },
-  { name: "Arosh Poudel", initials: "AP" },
+
   { name: "Yagyaraj Upadhayaya", initials: "YRU" },
   { name: "Basant Pd. Yadav", initials: "BPY" },
   { name: "Pradip KR. Sharma", initials: "PKS" },

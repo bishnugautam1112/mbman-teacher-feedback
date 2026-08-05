@@ -250,7 +250,7 @@ export default function AdminPage() {
   const tabs: { key: Tab; label: string; icon: string; count?: number }[] = [
     // System Health — SUPER_ADMIN only
     ...(isSuperAdmin ? [{ key: "HEALTH" as Tab, label: "System Health", icon: "" }] : []),
-    { key: "KYC", label: "KYC Approvals", icon: "", count: kycs.length },
+    { key: "KYC", label: "Student Verifications", icon: "", count: kycs.length },
     { key: "USERS", label: "User Management", icon: "", count: users.length },
     { key: "REVIEWS", label: "Review Audit", icon: "", count: reviews.length },
   ];
@@ -273,7 +273,7 @@ export default function AdminPage() {
             )}
           </h1>
           <p style={{ color: "#64748b", fontWeight: 500, marginTop: "0.25rem" }}>
-            {isSuperAdmin ? "Full system management & AI monitoring" : "User & KYC management"}
+            {isSuperAdmin ? "Full system management & AI monitoring" : "User & Student Verification"}
           </p>
         </div>
         {/* Role badge */}
@@ -526,7 +526,7 @@ export default function AdminPage() {
                 <option value="PENDING">Pending Approval</option>
                 <option value="APPROVED">Approved</option>
                 <option value="REJECTED">Rejected</option>
-                <option value="ALL">All KYC Documents</option>
+                <option value="ALL">All Verification Documents</option>
               </select>
             </div>
           )}
@@ -537,7 +537,7 @@ export default function AdminPage() {
                 {kycFilter === "PENDING" ? "All Clear" : "No Records Found"}
               </div>
               <div style={{ color: "#64748b", fontSize: "0.875rem" }}>
-                {kycFilter === "PENDING" ? "No pending KYC documents to review." : `No ${kycFilter.toLowerCase()} KYC documents found.`}
+                {kycFilter === "PENDING" ? "No pending verification documents to review." : `No ${kycFilter.toLowerCase()} verification documents found.`}
               </div>
             </div>
           ) : (
@@ -689,7 +689,7 @@ export default function AdminPage() {
             </button>
             <img
               src={selectedImage}
-              alt="KYC Document Full Size"
+              alt="Student ID Document Full Size"
               style={{
                 maxWidth: "100%",
                 maxHeight: "90vh",
@@ -741,7 +741,7 @@ export default function AdminPage() {
                       <th>Email</th>
                       <th>Role</th>
                       <th>Department</th>
-                      <th>KYC</th>
+                      <th>Verification</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
@@ -877,6 +877,27 @@ export default function AdminPage() {
                     <option value="ARCHITECTURE">Architecture</option>
                     <option value="BASIC_SCIENCE">Basic Science & Humanities</option>
                   </select>
+                </div>
+                <div className={styles.inputGroup}>
+                  <label>Profile Photo (Optional)</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setNewTeacher({ ...newTeacher, image: reader.result as string });
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    style={{ padding: "0.5rem" }}
+                  />
+                  {newTeacher.image && (
+                    <img src={newTeacher.image} alt="Preview" style={{ width: "60px", height: "60px", objectFit: "cover", borderRadius: "50%", marginTop: "0.75rem", border: "1px solid #e2e8f0" }} />
+                  )}
                 </div>
                 <button type="submit" className={styles.btnApprove} style={{ width: "100%", marginTop: "1rem" }}>
                   Create Teacher Account

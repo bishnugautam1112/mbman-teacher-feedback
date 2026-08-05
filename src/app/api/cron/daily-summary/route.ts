@@ -6,22 +6,21 @@ import { emailQueue, getTeacherSummaryTemplate } from "@/backend/services/email"
 // This route should be pinged by Vercel Cron at 9 PM daily
 export async function GET(req: Request) {
   try {
-    // 1. Verify Vercel Cron Secret for security
+    // 1. Verify Vercel Cron Secret for security (bypass in development for testing)
     const authHeader = req.headers.get("authorization");
-    if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    if (process.env.NODE_ENV !== "development" && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
     const teachers = await prisma.user.findMany({
       where: { 
         role: "TEACHER",
-        facebookPsid: { not: null },
         receiveDailySummary: true
       }
     });
 
     if (teachers.length === 0) {
-      return NextResponse.json({ message: "No teachers linked to Facebook." });
+      return NextResponse.json({ message: "No teachers opted in for daily summaries." });
     }
 
     const today = new Date();
@@ -56,7 +55,9 @@ export async function GET(req: Request) {
       const summaryText = await callGoogleAIWithRetry(prompt, "gemini-3.5-flash-lite");
 
       // 4. Send to Facebook Messenger via Graph API
-      await sendFacebookDM(teacher.facebookPsid!, summaryText);
+      if (teacher.facebookPsid) {
+        await sendFacebookDM(teacher.facebookPsid, summaryText);
+      }
 
       // 5. Send Low-Priority email notification to teacher via throttled queue
       if (teacher.email) {

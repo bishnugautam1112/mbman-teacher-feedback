@@ -72,11 +72,12 @@ export default function KycVerificationCard({ currentStatus }: { currentStatus: 
         throw new Error(data.error || "API failed");
       }
       
-      alert("KYC Submitted Successfully! Waiting for Admin Approval.");
+      alert("Student Verification Submitted Successfully! Waiting for Admin Approval.");
       router.refresh();
     } catch (error: any) {
       console.error(error);
-      alert(error.message || "Failed to submit KYC");
+      setUploadError(error.message || "Failed to submit verification");
+      alert(error.message || "Failed to submit verification");
     } finally {
       setLoading(false);
     }

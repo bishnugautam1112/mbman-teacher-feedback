@@ -235,7 +235,7 @@ export function getWelcomeKycTemplate(userName: string): string {
           <h2 style="margin-top: 0; color: #0f172a; font-size: 18px;">Welcome, ${userName}</h2>
           <p style="color: #475569; font-size: 14px;">Thank you for registering on the official Madan Bhandari Memorial Academy Nepal (MBMAN) Teacher Feedback Portal.</p>
           <div style="background: #f8fafc; border-left: 4px solid #1d4ed8; padding: 16px; border-radius: 6px; margin: 20px 0;">
-            <h3 style="margin: 0 0 6px 0; color: #0f172a; font-size: 15px;">Student KYC Verification Required</h3>
+            <h3 style="margin: 0 0 6px 0; color: #0f172a; font-size: 15px;">Student Verification Required</h3>
             <p style="margin: 0; color: #475569; font-size: 14px;">To submit teacher reviews and access student features, please log into your dashboard and upload your official MBMAN Student ID Card.</p>
           </div>
           <p style="color: #475569; font-size: 14px;">All submitted reviews are processed anonymously using secure cryptographic hashing and AI moderation.</p>
@@ -253,7 +253,7 @@ export function getKycReceivedTemplate(userName: string): string {
     <div style="${BASE_STYLES}">
       <div style="${CARD_STYLES}">
         <div style="${HEADER_STYLES}">
-          <h1 style="margin: 0; font-size: 22px; font-weight: 800;">KYC Submission Received</h1>
+          <h1 style="margin: 0; font-size: 22px; font-weight: 800;">Student Verification Received</h1>
         </div>
         <div style="padding: 32px 24px;">
           <h2 style="margin-top: 0; color: #0f172a; font-size: 18px;">Verification Under Review</h2>
@@ -276,10 +276,10 @@ export function getAdminKycAlertTemplate(studentName: string, studentEmail: stri
     <div style="${BASE_STYLES}">
       <div style="${CARD_STYLES}">
         <div style="${HEADER_STYLES}">
-          <h1 style="margin: 0; font-size: 22px; font-weight: 800;">Pending KYC Verification Alert</h1>
+          <h1 style="margin: 0; font-size: 22px; font-weight: 800;">Pending Student Verification Alert</h1>
         </div>
         <div style="padding: 32px 24px;">
-          <h2 style="margin-top: 0; color: #0f172a; font-size: 18px;">Student KYC Verification Submitted</h2>
+          <h2 style="margin-top: 0; color: #0f172a; font-size: 18px;">Student Verification Submitted</h2>
           <p style="color: #475569; font-size: 14px;">A student has submitted an ID Card for verification:</p>
           <table style="width: 100%; border-collapse: collapse; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; margin: 16px 0;">
             <tr><td style="padding: 10px 14px; font-weight: 600; color: #475569; border-bottom: 1px solid #e2e8f0;">Student Name</td><td style="padding: 10px 14px; color: #0f172a; border-bottom: 1px solid #e2e8f0;">${studentName}</td></tr>
@@ -301,7 +301,7 @@ export function getKycApprovedTemplate(userName: string): string {
     <div style="${BASE_STYLES}">
       <div style="${CARD_STYLES}">
         <div style="${HEADER_STYLES}">
-          <h1 style="margin: 0; font-size: 22px; font-weight: 800;">KYC Verification Approved</h1>
+          <h1 style="margin: 0; font-size: 22px; font-weight: 800;">Student Verification Approved</h1>
         </div>
         <div style="padding: 32px 24px; text-align: center;">
           <h2 style="margin-top: 0; color: #0f172a; font-size: 18px;">Account Verification Confirmed</h2>
@@ -324,7 +324,7 @@ export function getKycRejectedTemplate(userName: string, reason: string): string
     <div style="${BASE_STYLES}">
       <div style="${CARD_STYLES}">
         <div style="${HEADER_STYLES}">
-          <h1 style="margin: 0; font-size: 22px; font-weight: 800;">KYC Document Update Required</h1>
+          <h1 style="margin: 0; font-size: 22px; font-weight: 800;">Student ID Update Required</h1>
         </div>
         <div style="padding: 32px 24px;">
           <h2 style="margin-top: 0; color: #0f172a; font-size: 18px;">Verification Request Not Approved</h2>

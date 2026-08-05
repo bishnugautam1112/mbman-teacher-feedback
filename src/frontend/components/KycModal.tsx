@@ -31,11 +31,11 @@ export default function KycModal({ currentStatus }: { currentStatus: string }) {
       // await fetch("/api/kyc", { method: "POST", body: formData });
 
       // After success, we force a refresh so the session updates (in a real scenario)
-      alert("KYC Submitted Successfully! Waiting for Admin Approval.");
-      router.refresh();
+      alert("Student Verification Submitted Successfully! Waiting for Admin Approval.");
+      onClose();
     } catch (error) {
       console.error(error);
-      alert("Failed to submit KYC");
+      alert("Failed to submit verification");
     } finally {
       setLoading(false);
     }
