@@ -143,43 +143,55 @@ export async function callGoogleAIWithRetry(prompt: string, initialModel: string
  * Fallback sanitizer in case AI fails or returns raw text
  */
 function fallbackSanitize(text: string): { text: string; isToxic: boolean } {
-  const toxicPattern = /\b(go to hell|hell|fuck|fucking|bitch|shit|bullshit|die|muji|radi|torpe|kutta|randi|mc|bc|idiot|stupid)\b/gi;
+  const toxicPattern = /\b(go to hell|hell|fuck|fucking|bitch|shit|bullshit|die|muji|radi|torpe|kutta|randi|mc|bc|idiot|stupid|worst|waste of time|gadu|guu|chor|zero star|0 star)\b/gi;
   const isToxic = toxicPattern.test(text);
   const cleaned = text.replace(toxicPattern, "please improve teaching methods");
   return { text: cleaned, isToxic };
 }
 
 /**
- * AI Moderation Function (2-way Sanitization + Strict Abuse Detection)
+ * AI Moderation Function (2-way Sanitization + Contradiction & Abuse Audit)
  */
-export async function moderateReview(rawText: string): Promise<{ thirdPersonSummary: string, firstPersonSanitized: string, isAbusiveOrAnomalous: boolean }> {
+export async function moderateReview(
+  rawText: string,
+  submittedRating: number = 5
+): Promise<{
+  thirdPersonSummary: string;
+  firstPersonSanitized: string;
+  isAbusiveOrAnomalous: boolean;
+  auditedRating: number;
+}> {
   const prompt = `
-    You are AI, a strict, intelligent, and natural AI feedback moderator for a college teacher feedback system in Nepal (MBMAN).
-    A student has submitted the following raw feedback anonymously:
+    You are AI, a strict, intelligent, and natural AI feedback auditor for a college teacher feedback system in Nepal (MBMAN).
+    A student submitted the following feedback anonymously with a selected rating of ${submittedRating}/5 stars:
     "${rawText}"
 
-    STRICT RULES FOR MODERATION:
-    1. ZERO TOLERANCE FOR PROFANITY, HOSTILITY, INSULTS, & RUDE COMMANDS:
-       - Regard ANY phrase containing hostility, rudeness, slang, curse words, or insulting commands (such as "go to hell", "die", "fuck", "bitch", "useless", "muji", "torpe", "radi", "kutta", "randi", etc.) as PROFANITY / HOSTILITY.
-       - NEVER allow hostile phrases like "go to hell" or insults to pass through into the output text, REGARDLESS of how positive or high the rating or tone might seem!
+    STRICT RULES FOR MODERATION & AUDIT:
+    1. RATING VS TEXT CONTRADICTION & SARCSAM DETECTION:
+       - Check if the text CONTRADICTS the ${submittedRating}-star rating (e.g. Student gave 5 stars, but wrote sarcastic rants like "worst teacher", "go to hell", "master of sleeping", "zero star", "gadu", "muji", "terrible", "waste of time/money", or severe negative criticism).
+       - If the student wrote a 0-star/1-star rant or rough insult disguised as a 5-star rating:
+         - Calculate the TRUE realistic sentiment rating (e.g. 1 or 2 stars).
+         - Set "isAbusiveOrAnomalous": true.
+
+    2. ZERO TOLERANCE FOR PROFANITY, HOSTILITY, INSULTS, & RUDE COMMANDS:
+       - Regard ANY phrase containing hostility, rudeness, slang, curse words, creative insults, or rude commands (such as "go to hell", "die", "fuck", "bitch", "useless", "muji", "torpe", "radi", "kutta", "randi", etc.) as PROFANITY / HOSTILITY.
+       - NEVER allow hostile phrases like "go to hell" or insults to pass through into the output text, REGARDLESS of how high the submitted rating was!
        - Transform toxic rants, bad words, or hostile commands into polite, constructive, natural feedback in the SAME language/script.
        - Example: "go to hell sir" -> "Please improve teaching guidance and support sir."
        - Example: "muji padhauna aaudaina" -> "Kripaya teaching method ra explanation ma aaru dhaayan dinus."
 
-    2. LANGUAGE & SCRIPT PRESERVATION:
+    3. LANGUAGE & SCRIPT PRESERVATION:
        - Maintain the EXACT same language and script/romanization style as the input!
        - If written in Romanized Nepali (e.g. "go to hell, dinu vako chaina"), output MUST be in Romanized Nepali!
        - If written in Nepali script (Devanagari), output MUST be in Devanagari script.
        - If written in English, output MUST be in English.
 
-    3. ANOMALY & ABUSE DETECTION:
-       - Set "isAbusiveOrAnomalous" to true if the raw input contained ANY insult, slang, curse word, hostile phrase ("go to hell"), or severe negativity.
-
     You MUST return ONLY a valid JSON object with the following schema:
     {
       "thirdPersonSummary": "The natural, strictly moderated student review in the original language/romanization without any insults or bad words.",
       "firstPersonSanitized": "A polite 1st-person version in the original language/romanization with all bad words and hostile phrases replaced by polite feedback.",
-      "isAbusiveOrAnomalous": true
+      "isAbusiveOrAnomalous": true,
+      "auditedRating": 1
     }
   `;
 
@@ -188,15 +200,21 @@ export async function moderateReview(rawText: string): Promise<{ thirdPersonSumm
     const jsonStr = response.replace(/^```json/m, "").replace(/```$/m, "").trim();
     const result = JSON.parse(jsonStr);
     
-    // Check fallback filter on outputs just to be 100% bulletproof
+    // Check fallback filter on outputs
     const fbThird = fallbackSanitize(result.thirdPersonSummary || rawText);
     const fbFirst = fallbackSanitize(result.firstPersonSanitized || rawText);
     const fbRaw = fallbackSanitize(rawText);
 
+    const isToxic = result.isAbusiveOrAnomalous === true || fbRaw.isToxic || fbThird.isToxic || fbFirst.isToxic;
+    const finalAuditedRating = (isToxic && result.auditedRating && result.auditedRating < submittedRating)
+      ? Number(result.auditedRating)
+      : (isToxic ? Math.min(submittedRating, 2) : (result.auditedRating || submittedRating));
+
     return {
       thirdPersonSummary: fbThird.text,
       firstPersonSanitized: fbFirst.text,
-      isAbusiveOrAnomalous: result.isAbusiveOrAnomalous === true || fbRaw.isToxic || fbThird.isToxic || fbFirst.isToxic
+      isAbusiveOrAnomalous: isToxic,
+      auditedRating: finalAuditedRating
     };
   } catch (error) {
     console.error("Moderation AI Failed completely:", error);
@@ -204,7 +222,8 @@ export async function moderateReview(rawText: string): Promise<{ thirdPersonSumm
     return {
       thirdPersonSummary: fb.text,
       firstPersonSanitized: fb.text,
-      isAbusiveOrAnomalous: fb.isToxic
+      isAbusiveOrAnomalous: fb.isToxic,
+      auditedRating: fb.isToxic ? Math.min(submittedRating, 2) : submittedRating
     };
   }
 }
