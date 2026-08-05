@@ -1,90 +1,145 @@
-# MBMAN Teacher Feedback System via AIRA
+# 🎓 MBMAN Anonymous Teacher Feedback System
 
-Welcome to the official repository for **Feedback system**, an advanced, 100% anonymous Teacher Feedback System developed for the Madan Bhandari Memorial Academy (MBMAN). 
-
-This project is building over serveral days of dedicated hard work and collaboration to solve a critical issue: allowing students to submit honest academic feedback without fear of retaliation, while protecting educators from toxic or abusive language.
+An advanced, 100% anonymous, AI-moderated academic feedback platform built specifically for the **Madan Bhandari Memorial Academy Nepal (MBMAN)**.
 
 ---
 
-## 👥 The Engineering Team
+## 🌟 Why We Built This
 
-This system are architected and developed by a dedicated team of four engineering students:
+At many academic institutions, students hesitate to give honest feedback due to fear of retaliation, while teachers often miss out on genuine, constructive insights into their teaching methods. 
 
-- **Bishnu Gautam** - *Team Lead & Full Stack Developer*
-  - Led the overall system architecture, implemented NextAuth authentication flows, built the custom OTP email verification system, and designed the Facebook Graph API webhook integration.
-- **Lalit Budhathoki** - *Backend & Database Architect*
-  - Designed the robust PostgreSQL database schema using Prisma ORM, engineered the secure "Zero-Linkage" anonymity model, and built the automated Vercel Cron jobs for daily AI summaries.
-- **Sayuja Bhattarai** - *UI/UX Designer & Frontend Developer*
-  - Designed the premium dark-mode landing page, global application layouts, and responsive CSS styling, ensuring the platform feels modern, intuitive, and highly accessible on mobile devices.
-- **Saras Shrestha** - *Frontend Developer & State Management*
-  - Built the dynamic React dashboards for Students, Teachers, and Admins. Managed complex client-side state, filter interactions, and integrated real-time leaderboard statistics.
+We engineered this platform to bridge that gap:
+- **For Students:** A safe, mathematically anonymous space to express authentic feedback without identity tracking.
+- **For Teachers:** A constructive channel where toxicity is filtered out, leaving actionable insights to help improve classroom experience.
 
 ---
 
-## 🚀 Key Features
+## 👨‍💻 Engineering Team & Roles
 
-1. **Absolute Anonymity (Zero-Linkage Database Design)**
-   - To guarantee student safety, the database *never* records which student submitted a review. 
-   - Instead, we use a complex cryptographic hash combining the Student ID, Teacher ID, and the current date. This prevents duplicate spam while making it mathematically impossible to trace a review back to a student.
+Developed through dedicated collaboration by a team of four engineering students:
 
-2. **Automated AI Moderation (AIRA)**
-   - Raw feedback is passed through a rotating pool of AIRA API KEYS. The AI strips profanity and hate speech, summarizing the emotional intent into constructive, professional bullet points before the teacher ever sees it.
-
-3. **Facebook Messenger Integration**
-   - Teachers do not need to constantly check the dashboard. They can subscribe via their Facebook account, and a secure backend webhook will automatically DM them their sanitized feedback summaries every single night.
-
-4. **Multi-Role Dashboards & KYC**
-   - **Students:** Can view teacher leaderboards and submit feedback, but only after an Admin approves their uploaded MBMAN ID Card (KYC Verification).
-   - **Teachers:** Have a personalized dashboard to view ratings, trends, and subscribe to notifications.
-   - **Admins:** Can moderate users, approve KYC requests, and oversee platform health.
+- **Bishnu Gautam** — *Team Lead & Full Stack Developer*
+  - Overall platform architecture, NextAuth authentication flow, OTP email verification system, and Facebook Graph API webhook integrations.
+- **Lalit Budhathoki** — *Backend & Database Architect*
+  - PostgreSQL schema design via Prisma ORM, Zero-Linkage cryptographic anonymity hashing algorithm, and automated Vercel Cron daily summary jobs.
+- **Sayuja Bhattarai** — *UI/UX Designer & Frontend Developer*
+  - UI layout, responsive styling, dark/light theme engine, custom SVG assets, and overall mobile user experience.
+- **Saras Shrestha** — *Frontend Developer & State Management*
+  - Dynamic dashboards for Students, Teachers, and Admins, client-side state interactions, review filtering, and real-time leaderboard statistics.
 
 ---
 
-## 🛠️ Technology Stack
+## 🔥 Key Technical Features
 
-- **Framework:** Next.js 16 (App Router)
-- **Language:** TypeScript
-- **Database:** PostgreSQL (hosted via Supabase connection pooling)
-- **ORM:** Prisma
-- **Styling:** Tailwind CSS & Framer Motion (for micro-animations)
-- **Authentication:** NextAuth.js (Credentials & Google OAuth)
-- **AI Engine:** Google Gemini Pro
-- **Email Delivery:** Nodemailer (for OTPs)
-- **Deployment:** Vercel
+### 1. 🔒 Cryptographic Zero-Linkage Anonymity
+To guarantee student safety, the database **never** stores a student's ID or user reference on review records. Instead, a daily HMAC-SHA256 hash is computed using the student ID, teacher ID, and current date string (`YYYY-MM-DD`). This prevents duplicate spamming while making it mathematically impossible to trace a review back to any individual student.
 
----
+### 2. 🤖 Resilient AI Moderation (Gemini Engine)
+Raw student submissions pass through a multi-key pool of Google Gemini models. The AI:
+- Removes profanity, vulgarity, and personal attacks.
+- Preserves the student's authentic language and script (English, Devanagari, or Romanized Nepali).
+- Converts toxic rants into polite, actionable feedback.
+- Uses an automated 14-tier model failover hierarchy to handle rate limits seamlessly.
 
-## 💻 Local Setup Instructions
+### 3. 📊 Weighted Faculty Leaderboard
+Combines student rating scores (**70% weight**) and overall review volume (**30% weight**) to calculate fair, unbiased ranking podiums (#1, #2, #3) across daily, weekly, monthly, and all-time timeframes.
 
-If you are an evaluator or developer looking to run this project locally:
+### 4. 📱 Daily Facebook Messenger Summaries
+Teachers can link their account to Facebook Messenger with one click (`m.me` referral protocol). A daily Vercel Cron job synthesizes their feedback into encouraging bullet points and DMs them straight to their Facebook inbox.
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/bishnugautam1112/mbman-teacher-feedback.git
-   cd teacher-feedback-app
-   ```
-
-2. **Install Dependencies:**
-   ```bash
-   npm install
-   ```
-
-3. **Environment Variables:**
-   Create a `.env.local` file in the root directory and add the necessary keys (Database URL, NextAuth Secret, Gemini API Keys). *Note: Secrets are kept strictly confidential by the team.*
-
-4. **Database Setup:**
-   ```bash
-   npx prisma generate
-   npx prisma db push
-   ```
-
-5. **Run the Development Server:**
-   ```bash
-   npm run dev
-   ```
-
-6. Open [http://localhost:3000](http://localhost:3000) in your browser.
+### 5. 🛡️ Student KYC Verification
+To prevent fake accounts, students must upload their MBMAN ID card for Admin review before submitting feedback.
 
 ---
 
-*Dedicated to improving the academic ecosystem at MBMAN through transparency, safety, and constructive communication.*
+## 🛠️ Tech Stack
+
+| Component | Technology |
+|---|---|
+| **Framework** | Next.js 16 (App Router) |
+| **Language** | TypeScript |
+| **Styling** | Tailwind CSS v4 & Framer Motion |
+| **Database** | PostgreSQL + Prisma ORM 7 |
+| **Auth** | NextAuth.js (Credentials & Google OAuth) |
+| **AI Moderation** | Google Gemini API (Multi-Key Pool) |
+| **Messaging** | Meta Graph API & Nodemailer |
+| **Deployment** | Vercel |
+
+---
+
+## 📁 Directory Structure
+
+```text
+teacher-feedback-app/
+├── prisma/
+│   ├── schema.prisma        # Database models (User, Review, KycDocument, etc.)
+│   └── seed.ts              # Initial seed script for demo data
+├── public/                  # Static assets & custom SVGs (chatbot-icon, competition-icon)
+├── src/
+│   ├── app/
+│   │   ├── api/             # REST Endpoints (reviews, leaderboard, auth, cron, webhook)
+│   │   ├── auth/            # Signin, registration, and password reset routes
+│   │   ├── dashboard/       # Student/Admin dashboards & Leaderboard UI
+│   │   └── teacher/         # Faculty dashboard & reply interface
+│   ├── backend/
+│   │   ├── auth/            # NextAuth options & security callbacks
+│   │   ├── db/              # Prisma client instance
+│   │   └── services/        # Anonymity, Gemini AI, Permissions & Email queues
+│   └── frontend/            # Shared UI components (Footer, KycModal, Verification Cards)
+└── README.md
+```
+
+---
+
+## 🚀 Local Development Setup
+
+Follow these steps to run the application locally:
+
+### 1. Clone the repository
+```bash
+git clone https://github.com/bishnugautam1112/mbman-teacher-feedback.git
+cd teacher-feedback-app
+```
+
+### 2. Install dependencies
+```bash
+npm install
+```
+
+### 3. Setup environment variables
+Create a `.env` file in the root folder and add:
+```env
+DATABASE_URL="postgresql://user:password@localhost:5432/mbman_db"
+NEXTAUTH_SECRET="your-nextauth-secret-key"
+NEXTAUTH_URL="http://localhost:3000"
+SERVER_SECRET="crypto-hmac-secret-key"
+
+# Gemini API Keys (comma-separated for key rotation)
+GEMINI_API_KEYS="key1,key2,key3"
+
+# Optional Meta Messenger Webhook Keys
+FB_PAGE_ACCESS_TOKEN="your-fb-page-access-token"
+FB_APP_SECRET="your-fb-app-secret"
+FB_VERIFY_TOKEN="your-webhook-verify-token"
+NEXT_PUBLIC_FB_PAGE_ID="your-fb-page-id"
+```
+
+### 4. Push database schema & seed initial data
+```bash
+npx prisma generate
+npx prisma db push
+npx tsx prisma/seed.ts
+```
+
+### 5. Run the development server
+```bash
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+---
+
+## 📜 License & Acknowledgments
+
+Developed with care for the **Madan Bhandari Memorial Academy Nepal (MBMAN)** to foster open, safe, and continuous academic growth.
